@@ -1,0 +1,3 @@
+User-agent: *
+Allow: /
+Sitemap: https://archvanta.github.io/sitemap.xml
