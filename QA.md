@@ -54,4 +54,6 @@ No real commissioned portfolio assets, founder photograph, biography, credential
 
 ## Publication status
 
-Source committed locally as `c2958ed` (initial implementation). The authenticated GitHub identity is `archvanta`, but creating `archvanta/archvanta.github.io` was rejected with `Resource not accessible by integration (createRepository)`. No new root repository or root deployment has been created by this task. Publication is blocked until the owner creates the repository and grants this connection access. The existing FRONTIER application remains available.
+The initial repository-creation request was rejected by the GitHub integration. The owner then created `archvanta/archvanta.github.io` and granted this connection access. Source and the deployment workflow are ready for publication there. The live deployment result will be recorded after verification.
+
+A 4.5-second automated full-page scroll sample at 390 px and 1440 px also recorded 270 frames in each run, p95 16.7 ms, with zero intervals above 20 ms. As above, this is a measured browser sample rather than an all-device guarantee.
