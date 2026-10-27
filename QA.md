@@ -51,3 +51,7 @@ The project lives in `/workspace/archvanta.github.io`, separate from the existin
 ## Remaining content limitations
 
 No real commissioned portfolio assets, founder photograph, biography, credentials, email address or other social profiles were provided. None are invented. The portfolio uses original concept studies and editable project data; contact uses GitHub. Technical illustrations are conceptual and are not verified engineering/construction documents.
+
+## Publication status
+
+Source committed locally as `c2958ed` (initial implementation). The authenticated GitHub identity is `archvanta`, but creating `archvanta/archvanta.github.io` was rejected with `Resource not accessible by integration (createRepository)`. No new root repository or root deployment has been created by this task. Publication is blocked until the owner creates the repository and grants this connection access. The existing FRONTIER application remains available.

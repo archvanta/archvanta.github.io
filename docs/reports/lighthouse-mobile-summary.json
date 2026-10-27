@@ -1,0 +1,19 @@
+{
+  "url": "http://127.0.0.1:4190/",
+  "fetchTime": "2026-10-27T23:03:26.848Z",
+  "lighthouseVersion": "13.6.0",
+  "environment": "Local production preview, Lighthouse default simulated mobile profile, headless Chromium",
+  "scores": {
+    "performance": 100,
+    "accessibility": 100,
+    "best-practices": 100,
+    "seo": 100
+  },
+  "metrics": {
+    "LCP_ms": 906,
+    "FCP_ms": 906,
+    "TBT_ms": 37,
+    "CLS": 0.02213359449360249
+  },
+  "limitation": "A local measurement, not a production or all-device guarantee."
+}
