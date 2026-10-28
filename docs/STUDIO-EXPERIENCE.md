@@ -1,20 +1,15 @@
 # ARCHVANTA studio experience
 
-The interface uses the supplied mountain parallax as the opening image and a restrained architectural language throughout the real content: fine grids, line diagrams, a lime/blue theme accent, large Inter headings and Vazirmatn for Persian.
+The permanent home introduction restores the owner's red statue composition. Four GSAP layers retain the supplied Osmo scroll speeds (70/55/40/10), reverse on upward scroll and clean up Lenis when leaving home. The initial cast reveal runs once per mount; reduced motion keeps the composition still. No computer video or mountain scene is requested by the home page. Chande Bootcamp informed the editorial rhythm and oversized introduction; its assets and branding are not copied.
 
-Implemented changes:
+- Home sequence: introduction → expertise → systems → Lab → digital projects → creator → news → process → selected work → contact.
+- Selected work uses a large indigo headline card and a crimson next-project card, replacing the rotating image stack. Controls are manual and links resolve to real project records.
+- Generated pearl-metal images replace discipline wireframes across the navigation, introduction, expertise and Lab. Four matched building images crossfade on layer selection. The creator panel uses a generated architectural sculpture instead of M/S initials. These are concept illustrations, separate from actual portfolio drawings.
+- The owner-approved generated portal logo appears in the header and favicon. Delivery images are optimized local WebP files.
+- Project drawing galleries use consistent 4:3 contain frames, preserving complete drawings. Clicking opens the original. All 119 supplied proposal pages are expanded by default; source project text, deliverables, timeline and credits remain available.
+- The creator section offers the supplied PDF résumé unchanged. A minimal Cheghad row opens the owner's actual website; its source repository is linked separately.
+- The global header has its own view-transition snapshot, excluded from page translation. The smooth-scroll cleanup occurs before route scroll restoration.
 
-- Hero: concise practice description and working project/Lab links over the dark foreground. Preserve the four image layers and reversible movement.
-- Introduction: asymmetric manifesto, actual creator link and a compact four-discipline navigation rail. Retain Osmo resource attribution.
-- Home sequence: introduction → selected projects → expertise → systems → Lab → creator → FRONTIER → process → contact. The duplicate news preview is removed and the remaining preview contains three current articles.
-- Projects: framed carousel, stronger project titles, consistent image frames, complete detail pages and count badges calculated from the real catalog.
-- Expertise: two-column disclosure cards with the original line glyphs, a visible selected state and a single-column mobile layout.
-- Lab: original schematic illustrations, retained card colors, clear model-launch actions and no eager WebGL loading. The schematics are decorative drawings, not fabricated model screenshots.
-- Creator: typographic M/S signature, structural brand drawing, actual name, role and location. No stock portrait or invented credentials.
-- Process/contact/footer: connected numbered steps, direct email action, a route-preserving back-to-top button and a large typographic signature.
+Shared FRONTIER fonts and tokens remain authoritative: Inter for English and Vazirmatn for Persian, with both themes supported. Generated image motion is interaction-driven rather than continuous. Model WebGL still loads only on request. No universal frame-rate guarantee is made.
 
-`src/styles/studio.css` holds the scoped visual layer. `src/components/StudioDetails.tsx` holds the original index, schematics and signature. Shared FRONTIER tokens remain authoritative for both themes; editorial feeds, ranking and attribution are retained.
-
-No new animation dependency is added for this finish. Grids and diagrams are static; hover changes use short transforms. The existing reduced-motion setting disables animated enhancements. No universal frame-rate guarantee is made.
-
-Validation includes both languages, light/dark themes, six responsive widths, Axe scans, existing integration checks and a new navigation test for project counts, discipline links, model launch and back-to-top behavior. Production screenshots are in `docs/previews/studio`.
+Implementation: `src/styles/generated-experience.css`, `src/components/ui/statue-layers.tsx`, `src/components/ui/project-headlines.tsx`, and the existing shared components. Screenshots are in `docs/previews/refresh`.

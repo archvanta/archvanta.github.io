@@ -27,6 +27,8 @@ export interface PortfolioProject {
   approach?: string;
   solution?: string;
   learned?: string;
+  timeline?: string;
+  type?: string;
   cover?: PortfolioImage;
   gallery?: PortfolioImage[];
   boards?: { title: string; items: PortfolioImage[] };

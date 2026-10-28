@@ -36,6 +36,7 @@ export function localSearch(q: string, locale: Locale): LocalSearchResult[] {
       description: o.description,
       href: brandHref("/lab/" + o.file),
     })),
+    { type: 'lab' as const, title: locale === 'fa' ? 'چقدر؟ — CHEGHAD' : 'CHEGHAD', description: locale === 'fa' ? 'مدیریت مالی شخصی؛ درآمد، هزینه و دارایی‌ها.' : 'Personal finance: income, expenses and assets.', href: 'https://archvanta.github.io/cheghad/' },
     {
       type: "page" as const,
       title: locale === "fa" ? "محمدامین صادقی" : "MohammadAmin Sadeghi",
