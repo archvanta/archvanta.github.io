@@ -1,3 +1,7 @@
+# Historical standalone baseline
+
+The measurements below apply to the pre-unification brand site only. Current integration results are in [docs/QA-REPORT.md](docs/QA-REPORT.md).
+
 # Validation record
 
 Validated 2026-10-27 UTC (2026-10-28 in Asia/Tehran).

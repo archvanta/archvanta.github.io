@@ -1,0 +1,6 @@
+/* Tailwind utilities for imported UI components. Preflight is intentionally omitted;
+   the shared FRONTIER reset, typography and design tokens remain authoritative. */
+@layer theme, utilities;
+@import "tailwindcss/theme.css" layer(theme);
+@import "tailwindcss/utilities.css" layer(utilities);
+@source '../';

@@ -1,0 +1,336 @@
+import { act, cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
+import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+import { App } from '../../App';
+import { createMockBackend } from '../../lib/account/mockBackend';
+import { MOCK_SESSION_KEY } from '../../lib/account/config';
+import type { AccountBackend } from '../../lib/account/types';
+import { _resetBookmarkCache, readBookmarks, toggleBookmark } from '../../lib/bookmarks';
+import { createDataSource } from '../../lib/data';
+import { I18nProvider } from '../../lib/i18n';
+import type { Article, Locale } from '../../lib/types';
+
+const TEST_PASSWORD = 'frontier-pass-123';
+
+function renderApp(hash: string, backend?: AccountBackend, locale: Locale = 'en') {
+  window.location.hash = hash;
+  const account = backend
+    ? { backend }
+    : { config: { mode: 'off' as const, url: '', key: '', problems: ['VITE_SUPABASE_URL', 'VITE_SUPABASE_PUBLISHABLE_KEY'] } };
+  return render(
+    <I18nProvider initial={locale}>
+      <App source={createDataSource('mock', new Date())} account={account} />
+    </I18nProvider>,
+  );
+}
+
+async function go(hash: string) {
+  await act(async () => {
+    window.location.hash = hash;
+    window.dispatchEvent(new HashChangeEvent('hashchange'));
+  });
+}
+
+/** Signs a user in directly through the mock service (as if they had used the code screen earlier). */
+async function signedInBackend(username = 'ada', setup?: (b: AccountBackend) => Promise<void>) {
+  const b = createMockBackend();
+  try {
+    await b.signUp(username, TEST_PASSWORD);
+  } catch {
+    await b.signIn(username, TEST_PASSWORD);
+  }
+  await setup?.(b);
+  return b;
+}
+
+const typeUsername = (value: string) => fireEvent.change(screen.getByLabelText('Username'), { target: { value } });
+const typePassword = (value: string) => fireEvent.change(screen.getByLabelText('Password'), { target: { value } });
+const submitAuth = (name: string) => fireEvent.click(screen.getByRole('button', { name }));
+
+beforeEach(() => {
+  window.localStorage.clear();
+  window.sessionStorage.clear();
+  _resetBookmarkCache();
+});
+afterEach(() => {
+  cleanup();
+  window.location.hash = '';
+});
+
+describe('public browsing', () => {
+  it('works with accounts switched off, and says so honestly on account screens', async () => {
+    renderApp('#/frontier/');
+    expect(await screen.findByRole('heading', { name: 'Top Signals' })).toBeInTheDocument();
+    expect(screen.queryByRole('link', { name: 'Sign in' })).not.toBeInTheDocument();
+    await go('#/frontier/signin');
+    expect(await screen.findByTestId('auth-not-configured')).toHaveTextContent('Accounts aren’t switched on yet');
+    expect(screen.getByTestId('auth-not-configured')).toHaveTextContent('VITE_SUPABASE_URL');
+    expect(screen.queryByLabelText('Email address')).not.toBeInTheDocument();
+    await go('#/frontier/for-you');
+    expect(await screen.findByTestId('auth-not-configured')).toBeInTheDocument();
+  });
+
+  it('keeps news open to signed-out visitors when accounts are on', async () => {
+    renderApp('#/frontier/', createMockBackend());
+    expect(await screen.findByRole('heading', { name: 'Top Signals' })).toBeInTheDocument();
+    expect(await screen.findByRole('link', { name: 'Sign in' })).toBeInTheDocument();
+    await go('#/frontier/for-you');
+    expect(await screen.findByText('Sign in to see this page')).toBeInTheDocument();
+    expect(within(screen.getByRole('main')).getByRole('link', { name: 'Sign in' })).toHaveAttribute('href', '#/frontier/signin?next=%2Ffor-you');
+  });
+});
+
+describe('username and password sign-in', () => {
+  it('creates an account, validates credentials and opens onboarding', async () => {
+    const backend = createMockBackend();
+    renderApp('#/frontier/signin?mode=create', backend);
+    typeUsername('bad name');
+    typePassword(TEST_PASSWORD);
+    submitAuth('Create account');
+    expect(await screen.findByRole('alert')).toHaveTextContent('Use 3–24 lowercase letters');
+
+    typeUsername('ada');
+    typePassword('short');
+    submitAuth('Create account');
+    expect(await screen.findByRole('alert')).toHaveTextContent('at least 8 characters');
+
+    typePassword(TEST_PASSWORD);
+    submitAuth('Create account');
+    await waitFor(() => expect(window.location.hash).toBe('#/frontier/welcome'));
+    expect(await screen.findByTestId('onboarding')).toHaveAttribute('data-step', '1');
+  });
+
+  it('rejects a wrong password and signs in with the saved password', async () => {
+    const backend = await signedInBackend();
+    await backend.signOut();
+    renderApp('#/frontier/signin', backend);
+    typeUsername('ada');
+    typePassword('wrong-pass');
+    submitAuth('Sign in');
+    expect(await screen.findByRole('alert')).toHaveTextContent('username or password is incorrect');
+    typePassword(TEST_PASSWORD);
+    submitAuth('Sign in');
+    await waitFor(() => expect(window.location.hash).toBe('#/frontier/welcome'));
+  });
+
+  it('renders RTL while credential inputs stay LTR', async () => {
+    renderApp('#/frontier/signin', createMockBackend(), 'fa');
+    expect(await screen.findByRole('heading', { name: 'ورود به فرانتیر' })).toBeInTheDocument();
+    expect(document.documentElement.dir).toBe('rtl');
+    expect(screen.getByLabelText('نام کاربری')).toHaveAttribute('dir', 'ltr');
+    expect(screen.getByLabelText('رمز عبور')).toHaveAttribute('dir', 'ltr');
+  });
+});
+
+describe('sessions', () => {
+  it('restores a stored session after a reload without showing "Sign in"', async () => {
+    const backend = await signedInBackend();
+    const view = renderApp('#/frontier/', backend);
+    expect(screen.queryByRole('link', { name: 'Sign in' })).not.toBeInTheDocument();
+    expect(await screen.findByRole('button', { name: /Account menu/ })).toBeInTheDocument();
+    view.unmount();
+    renderApp('#/frontier/account', createMockBackend());
+    expect(await screen.findByText('@ada', { selector: '.acct-email span' })).toBeInTheDocument();
+  });
+
+  it('signs out, forgets the session and falls back to local bookmarks', async () => {
+    const backend = await signedInBackend('ada', async (b) => {
+      await b.addSaved([{ id: 'abcdef12', day: '2026-10-20', title: 'Cloud story', sourceName: 'S', url: 'https://example.com/c', publishedAt: '', savedAt: '' }]);
+    });
+    renderApp('#/frontier/saved', backend);
+    expect(await screen.findByText('Cloud story')).toBeInTheDocument();
+    fireEvent.click(await screen.findByRole('button', { name: /Account menu/ }));
+    fireEvent.click(screen.getByRole('button', { name: 'Sign out' }));
+    expect(await screen.findByRole('link', { name: 'Sign in' })).toBeInTheDocument();
+    expect(window.localStorage.getItem(MOCK_SESSION_KEY)).toBeNull();
+    await go('#/frontier/saved');
+    expect(await screen.findByText('You have not saved any stories yet.')).toBeInTheDocument();
+    expect(screen.queryByText('Cloud story')).not.toBeInTheDocument();
+  });
+
+  it('tells the reader when a session ends on its own', async () => {
+    const backend = await signedInBackend();
+    renderApp('#/frontier/', backend);
+    await screen.findByRole('button', { name: /Account menu/ });
+    // Simulate the server revoking the session (e.g. refresh token expired): the service signs out by itself.
+    await act(async () => {
+      await backend.signOut();
+    });
+    // signOut through the backend directly is not "user initiated" from the app's point of view.
+    expect(await screen.findByText(/Your session expired/)).toBeInTheDocument();
+  });
+});
+
+describe('profile and onboarding', () => {
+  it('walks through onboarding, survives a reload mid-way and finishes only after saving', async () => {
+    const backend = await signedInBackend();
+    const view = renderApp('#/frontier/welcome', backend);
+    const ob = await screen.findByTestId('onboarding');
+    expect(ob).toHaveAttribute('data-step', '1');
+    fireEvent.change(screen.getByLabelText('Display name'), { target: { value: 'Ada' } });
+    fireEvent.click(screen.getByRole('button', { name: 'Continue' }));
+    await waitFor(() => expect(screen.getByTestId('onboarding')).toHaveAttribute('data-step', '2'));
+    fireEvent.click(screen.getByRole('button', { name: /AI Research/ }));
+    expect(screen.getByRole('button', { name: /AI Research/ })).toHaveAttribute('aria-pressed', 'true');
+    fireEvent.click(screen.getByRole('button', { name: 'Continue' }));
+    await waitFor(() => expect(screen.getByTestId('onboarding')).toHaveAttribute('data-step', '3'));
+    expect(await backend.getPreferences()).toEqual({ topics: ['research'], companies: [] });
+
+    view.unmount();
+    renderApp('#/frontier/welcome', createMockBackend());
+    await waitFor(() => expect(screen.getByTestId('onboarding')).toHaveAttribute('data-step', '3'));
+    fireEvent.click(screen.getByRole('button', { name: /OpenAI/ }));
+    fireEvent.click(screen.getByRole('button', { name: 'Continue' }));
+    await waitFor(() => expect(screen.getByTestId('onboarding')).toHaveAttribute('data-step', '4'));
+    const review = screen.getByTestId('onboarding');
+    expect(within(review).getByText('AI Research')).toBeInTheDocument();
+    expect(within(review).getByText('OpenAI')).toBeInTheDocument();
+    expect((await backend.getProfile()).onboardingCompletedAt).toBeNull();
+
+    fireEvent.click(screen.getByRole('button', { name: 'Finish' }));
+    await waitFor(() => expect(window.location.hash).toBe('#/frontier/for-you'));
+    const p = await backend.getProfile();
+    expect(p.displayName).toBe('Ada');
+    expect(p.onboardingCompletedAt).not.toBeNull();
+    expect(await backend.getPreferences()).toEqual({ topics: ['research'], companies: ['openai'] });
+  });
+
+  it('does not mark onboarding complete when saving fails', async () => {
+    const base = await signedInBackend();
+    await base.updateProfile({ onboardingStep: 3 });
+    const failing: AccountBackend = { ...base, saveCompanies: () => Promise.reject(new TypeError('Failed to fetch')) };
+    renderApp('#/frontier/welcome', failing);
+    await waitFor(() => expect(screen.getByTestId('onboarding')).toHaveAttribute('data-step', '4'));
+    fireEvent.click(screen.getByRole('button', { name: 'Finish' }));
+    expect(await screen.findByRole('alert')).toHaveTextContent('Couldn’t reach the sign-in service');
+    expect(window.location.hash).toBe('#/frontier/welcome');
+    expect((await base.getProfile()).onboardingCompletedAt).toBeNull();
+  });
+
+  it('keeps the reader’s language for a new account and applies the saved one for a returning account', async () => {
+    const view = renderApp('#/frontier/signin?mode=create', createMockBackend(), 'fa');
+    fireEvent.change(await screen.findByLabelText('نام کاربری'), { target: { value: 'newuser' } });
+    fireEvent.change(screen.getByLabelText('رمز عبور'), { target: { value: TEST_PASSWORD } });
+    fireEvent.click(screen.getByRole('button', { name: 'ساخت حساب' }));
+    await waitFor(() => expect(window.location.hash).toBe('#/frontier/welcome'));
+    await screen.findByTestId('onboarding');
+    expect(document.documentElement.lang).toBe('fa');
+    view.unmount();
+    window.sessionStorage.clear();
+
+    const returning = await signedInBackend('fauser', async (b) => {
+      await b.updateProfile({ locale: 'fa', onboardingStep: 4, onboardingCompletedAt: new Date().toISOString() });
+    });
+    renderApp('#/frontier/', returning, 'en');
+    await waitFor(() => expect(document.documentElement.lang).toBe('fa'));
+  });
+
+  it('sends returning users straight to their dashboard', async () => {
+    const backend = createMockBackend();
+    await backend.signUp('ada', TEST_PASSWORD);
+    await backend.updateProfile({ onboardingStep: 4, onboardingCompletedAt: new Date().toISOString() });
+    await backend.signOut();
+    renderApp('#/frontier/signin', backend);
+    typeUsername('ada');
+    typePassword(TEST_PASSWORD);
+    submitAuth('Sign in');
+    await waitFor(() => expect(window.location.hash).toBe('#/frontier/for-you'));
+  });
+
+  it('updates the profile and preferences from account settings', async () => {
+    const backend = await signedInBackend();
+    renderApp('#/frontier/account', backend);
+    const name = await screen.findByLabelText('Display name');
+    fireEvent.change(name, { target: { value: 'Ada Lovelace' } });
+    fireEvent.change(screen.getByLabelText('Avatar image URL (optional)'), { target: { value: 'javascript:alert(1)' } });
+    expect(screen.getByText('Use an https:// link of up to 500 characters.')).toBeInTheDocument();
+    fireEvent.change(screen.getByLabelText('Avatar image URL (optional)'), { target: { value: '' } });
+    fireEvent.click(screen.getAllByRole('button', { name: 'Save changes' })[0]!);
+    expect(await screen.findByText('Saved.')).toBeInTheDocument();
+    expect((await backend.getProfile()).displayName).toBe('Ada Lovelace');
+
+    fireEvent.click(screen.getByRole('button', { name: /NVIDIA/ }));
+    fireEvent.click(screen.getAllByRole('button', { name: 'Save changes' })[2]!);
+    await waitFor(async () => expect((await backend.getPreferences()).companies).toEqual(['nvidia']));
+  });
+
+  it('deletes the account only after the username is typed', async () => {
+    const backend = await signedInBackend();
+    renderApp('#/frontier/account', backend);
+    fireEvent.click(await screen.findByRole('button', { name: 'Delete account…' }));
+    const go = screen.getByRole('button', { name: 'Delete my account permanently' });
+    expect(go).toBeDisabled();
+    fireEvent.change(screen.getByLabelText('Type your username to confirm'), { target: { value: 'ada' } });
+    fireEvent.click(go);
+    await waitFor(() => expect(window.location.hash).toBe('#/frontier/'));
+    expect(await screen.findByRole('link', { name: 'Sign in' })).toBeInTheDocument();
+    expect(await backend.currentUser()).toBeNull();
+  });
+});
+
+describe('personal feed', () => {
+  it('ranks stories for the reader and explains why', async () => {
+    const backend = await signedInBackend('ada', async (b) => {
+      await b.updateProfile({ displayName: 'Ada', onboardingStep: 4, onboardingCompletedAt: new Date().toISOString() });
+      await b.saveCompanies(['openai']);
+      await b.saveTopics(['research']);
+    });
+    renderApp('#/frontier/for-you', backend);
+    expect(await screen.findByRole('heading', { name: 'Hi, Ada' })).toBeInTheDocument();
+    const items = await screen.findAllByTestId('fy-item');
+    expect(items.length).toBeGreaterThan(0);
+    expect(items[0]).toHaveAttribute('data-personal', 'true');
+    const reasons = screen.getAllByTestId('fy-reason').map((r) => r.textContent);
+    expect(reasons.some((r) => /OpenAI|AI Research/.test(r ?? ''))).toBe(true);
+    expect(screen.getByRole('heading', { name: 'Followed companies' })).toBeInTheDocument();
+  });
+
+  it('shows the global feed when no interests are chosen', async () => {
+    renderApp('#/frontier/for-you', await signedInBackend());
+    expect(await screen.findByText('You haven’t picked any interests yet, so this is the global feed.')).toBeInTheDocument();
+    expect((await screen.findAllByTestId('fy-item')).length).toBeGreaterThan(0);
+  });
+});
+
+describe('cloud bookmarks', () => {
+  it('saves to the account without duplicates', async () => {
+    const backend = await signedInBackend();
+    renderApp('#/frontier/', backend);
+    await screen.findByRole('button', { name: /Account menu/ });
+    const card = (await screen.findAllByTestId('story-card'))[0]!;
+    fireEvent.click(within(card).getByRole('button', { name: 'Save story' }));
+    await waitFor(async () => expect(await backend.listSaved()).toHaveLength(1));
+    const [saved] = await backend.listSaved();
+    await backend.addSaved([saved!]);
+    expect(await backend.listSaved()).toHaveLength(1);
+    expect(readBookmarks()).toHaveLength(0); // nothing leaked into the signed-out store
+    expect(within(card).getByRole('button', { name: 'Remove from saved' })).toHaveAttribute('aria-pressed', 'true');
+  });
+
+  it('offers to copy this browser’s bookmarks into the account and keeps them locally', async () => {
+    toggleBookmark({ id: 'feed0001', day: '2026-10-19', title: 'Local story', sourceName: 'S', url: 'https://example.com/l', publishedAt: '2026-10-19T00:00:00Z' } as Article);
+    const backend = await signedInBackend();
+    renderApp('#/frontier/saved', backend);
+    const offer = await screen.findByTestId('merge-offer');
+    expect(offer).toHaveTextContent('You have 1 stories saved in this browser');
+    expect(screen.getByTestId('saved-local-row')).toHaveTextContent('Local story');
+    fireEvent.click(within(offer).getByRole('button', { name: 'Add to my account' }));
+    await waitFor(() => expect(screen.queryByTestId('merge-offer')).not.toBeInTheDocument());
+    expect((await backend.listSaved()).map((s) => s.id)).toEqual(['feed0001']);
+    expect(readBookmarks().map((b) => b.id)).toEqual(['feed0001']);
+    expect(screen.getByTestId('saved-row')).toHaveTextContent('Local story');
+  });
+
+  it('remembers "Not now" without discarding anything', async () => {
+    toggleBookmark({ id: 'feed0002', day: '2026-10-19', title: 'Kept story', sourceName: 'S', url: 'https://example.com/k', publishedAt: '2026-10-19T00:00:00Z' } as Article);
+    const backend = await signedInBackend();
+    const view = renderApp('#/frontier/saved', backend);
+    fireEvent.click(within(await screen.findByTestId('merge-offer')).getByRole('button', { name: 'Not now' }));
+    await waitFor(() => expect(screen.queryByTestId('merge-offer')).not.toBeInTheDocument());
+    expect(screen.getByTestId('saved-local-row')).toHaveTextContent('Kept story');
+    expect(await backend.listSaved()).toHaveLength(0);
+    view.unmount();
+    renderApp('#/frontier/saved', createMockBackend());
+    await screen.findByTestId('saved-local-row');
+    expect(screen.queryByTestId('merge-offer')).not.toBeInTheDocument();
+  });
+});
