@@ -36,6 +36,7 @@ export function GlobalFooter() {
           ),
         )}
         <a href={href("/")}>FRONTIER</a>
+        <a href="https://archvanta.github.io/cheghad/" target="_blank" rel="noopener noreferrer">{locale === 'fa' ? 'چقدر؟' : 'CHEGHAD'} ↗</a>
         <a href={href("/saved")}>{locale === "fa" ? "ذخیره‌ها" : "Saved"}</a>
         <a href={href("/privacy")}>
           {locale === "fa" ? "حریم خصوصی" : "Privacy"}

@@ -116,7 +116,7 @@ test("project categories and concepts remain distinct; proposals and credits sur
   await expect(page.locator(".av-project-description")).toContainText(
     "three-person",
   );
-  await page.locator(".av-proposal summary").click();
+  await expect(page.locator(".av-proposal")).toHaveAttribute("open", "");
   await expect(page.locator(".av-proposal figure")).toHaveCount(9);
   for (const src of await page
     .locator(".av-proposal img")
@@ -257,7 +257,7 @@ test("liquid navigation preserves disclosures, route focus and CSP", async ({
   await expect(page.locator(".nimbus-nav canvas")).toHaveCount(0);
   await expect(page.locator(".nimbus-nav .nimbus-drop")).toHaveCount(1);
   await page.getByRole("button", { name: "Skip to projects" }).click();
-  await expect(page.locator(".circular-testimonials").first()).toBeInViewport();
+  await expect(page.locator(".project-headlines").first()).toBeInViewport();
   await page
     .locator(".nimbus-nav")
     .getByRole("button", { name: "Projects", exact: true })
@@ -276,15 +276,21 @@ test("liquid navigation preserves disclosures, route focus and CSP", async ({
   ).toBeFocused();
   expect(blocked).toEqual([]);
 });
-test("circular project stories switch locally without capturing page arrow keys", async ({
+test("project headlines appear near the end of home and link to the selected project", async ({
   page,
 }) => {
   await page.emulateMedia({ reducedMotion: "reduce" });
   await page.goto("/");
-  const carousel = page.locator(".circular-testimonials").first();
-  await expect(carousel.locator("h3")).toHaveText("Modular Data Center");
+  const carousel = page.locator(".project-headlines").first();
+  await expect(carousel.locator('.ph-title')).toBeVisible();
+  await expect(page.locator('.circular-testimonials')).toHaveCount(0);
+  expect(await page.evaluate(() => {
+    const section = document.querySelector('#selected-work')!;
+    return document.querySelector('#process')!.compareDocumentPosition(section) & Node.DOCUMENT_POSITION_FOLLOWING;
+  })).toBeTruthy();
+  await expect(carousel.locator(".ph-title")).toHaveText("Modular Data Center");
   await carousel.getByRole("button", { name: "Next project" }).click();
-  await expect(carousel.locator("h3")).toHaveText("Technical Level, 48 Racks");
+  await expect(carousel.locator(".ph-title")).toHaveText("Technical Level, 48 Racks");
   await carousel.getByRole("link", { name: "Explore project" }).click();
   await expect(page).toHaveURL(/#\/projects\/technical-level-48-racks$/);
 });
@@ -297,7 +303,7 @@ test("opening is a permanent scroll chapter, skips to projects and stays off dee
   await expect(page.locator("[data-parallax-layer]")).toHaveCount(4);
   await expect(page.locator(".expertise .brand-glyph")).toHaveCount(4);
   await page.getByRole("button", { name: "Skip to projects" }).click();
-  await expect(page.locator(".circular-testimonials").first()).toBeInViewport();
+  await expect(page.locator(".project-headlines").first()).toBeInViewport();
   await expect(page.locator(".parallax")).toHaveCount(1);
   await page.evaluate(() => (location.hash = "#/projects"));
   await expect(page.locator("main h1")).toHaveText("Projects");
@@ -327,7 +333,7 @@ test("parallax layers reverse on upward scroll and release smooth scrolling on r
   expect(positions[2]).toBeGreaterThan(positions[3]);
   await page.evaluate(() => window.scrollTo(0, 0));
   await expect.poll(async () => Math.abs((await offsets())[0])).toBeLessThan(1);
-  await expect(page.locator('.parallax__title')).toBeInViewport();
+  await expect(page.locator('.statue-title')).toBeInViewport();
   expect(computerMedia).toEqual([]);
   await expect(opening.locator("video")).toHaveCount(0);
   expect(await page.evaluate(() => document.documentElement.scrollWidth - innerWidth)).toBeLessThanOrEqual(1);
@@ -349,6 +355,58 @@ test("shared English and Persian fonts are loaded and used by form controls", as
   await expect(page.locator("html")).toHaveAttribute("lang", "fa");
   expect(await page.locator("body").evaluate(e => getComputedStyle(e).fontFamily)).toContain("Vazirmatn Variable");
   expect(await page.locator("#site-search").evaluate(e => getComputedStyle(e).fontFamily)).toContain("Vazirmatn Variable");
+});
+
+test('uploaded portfolio proposals stay complete, with uniform drawing frames and résumé access', async ({ page }) => {
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  const proposals: [string, number][] = [['two-level-facility',9],['technical-level-48-racks',19],['rack-room-reorganisation',14],['existing-hall-conversion',25],['data-hall-retrofit',14],['ramsar-urban-baseline-study',38]];
+  for (const [slug, count] of proposals) {
+    await page.goto(`/#/projects/${slug}`);
+    await expect(page.locator('.av-proposal')).toHaveAttribute('open', '');
+    await expect(page.locator('.av-proposal figure')).toHaveCount(count);
+  }
+  await page.goto('/#/projects/modular-data-centre');
+  const frames = page.locator('.av-gallery button');
+  await expect(frames).toHaveCount(8);
+  const heights = await frames.evaluateAll(elements => elements.map(e => e.getBoundingClientRect().height));
+  expect(Math.max(...heights) - Math.min(...heights)).toBeLessThan(1);
+  await expect(page.locator('.project-deliverables')).toBeVisible();
+  await page.goto('/#/portfolio');
+  const resume = page.locator('.studio-resume-link');
+  await expect(resume).toHaveAttribute('download', 'MohammadAmin_Sadeghi_Resume.pdf');
+  const response = await page.request.get('/documents/MohammadAmin_Sadeghi_Resume.pdf');
+  expect(response.status()).toBe(200);
+  expect((await response.body()).subarray(0,5).toString()).toBe('%PDF-');
+  await expect(page.locator('.cheghad-link')).toHaveAttribute('href','https://archvanta.github.io/cheghad/');
+});
+
+test('generated brand images and system layers replace wireframes; header stays outside page motion', async ({ page }) => {
+  await page.goto('/');
+  // The development-only fixture banner is absent from the published shell.
+  await page.evaluate(() => document.querySelector('.mock-banner')?.remove());
+  await expect(page.locator('.statue-composition')).toHaveAttribute('data-ready','true');
+  await expect(page.locator('.brand-glyph').first()).toHaveJSProperty('tagName','IMG');
+  await expect(page.locator('.av-header')).toHaveCSS('view-transition-name','site-header');
+  const group = page.getByRole('group', { name: 'Design layers' });
+  await group.scrollIntoViewIfNeeded();
+  for (let i=0;i<4;i++) {
+    await group.getByRole('button').nth(i).click();
+    await expect(page.locator('.generated-system-stage')).toHaveAttribute('data-layer',String(i));
+    await expect(page.locator('.generated-system-stage img[data-active="true"]')).toHaveCount(1);
+    const active = page.locator('.generated-system-stage img[data-active="true"]');
+    await expect(active).toHaveJSProperty('complete', true);
+    expect(await active.evaluate(image => (image as HTMLImageElement).naturalWidth)).toBeGreaterThan(0);
+    expect((await active.boundingBox())!.width).toBeGreaterThan(200);
+  }
+  await expect(page.locator('.studio-signature-name')).toHaveCount(0);
+  await page.evaluate(() => {
+    const root = window as typeof window & { headerSamples: number[]; stopHeaderSampling: boolean };
+    root.headerSamples=[]; root.stopHeaderSampling=false;
+    const sample = () => { root.headerSamples.push(document.querySelector('.av-header')!.getBoundingClientRect().top); if(!root.stopHeaderSampling) requestAnimationFrame(sample); }; sample();
+  });
+  for (const label of ['Digital Lab','About','Contact','Home']) await page.locator('.av-global-nav').getByRole('link',{name:label,exact:true}).click();
+  const samples=await page.evaluate(()=>{const root=window as typeof window & {headerSamples:number[];stopHeaderSampling:boolean};root.stopHeaderSampling=true;return root.headerSamples});
+  expect(Math.max(...samples)-Math.min(...samples)).toBeLessThan(1);
 });
 
 test("studio actions connect real projects, discipline pages and model tools", async ({ page }) => {

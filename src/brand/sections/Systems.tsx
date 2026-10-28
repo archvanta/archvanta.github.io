@@ -1,7 +1,6 @@
 import { useState } from "react";
 import { layers } from "../lib/content";
 import { usePreferences } from "../lib/preferences";
-import { ArchitecturalModel } from "../components/ArchitecturalModel";
 import { Icon } from "../components/Icon";
 export function Systems() {
   const { t, language } = usePreferences();
@@ -45,7 +44,11 @@ export function Systems() {
             <span className="technical systems-visual-label" dir="ltr">
               SYSTEM STUDY / 0{layer + 1}
             </span>
-            <ArchitecturalModel id="systems" mode={[0, 1, 3, 2][layer]} />
+            <div className="generated-system-stage" data-layer={layer}>
+              {['space', 'structure', 'infrastructure', 'information'].map((name, at) => <img key={name} src={`/images/brand-art/system-${name}.webp`} width="960" height="960" alt={at === layer ? layers[at]!.title[language] : ''} aria-hidden={at !== layer} data-active={at === layer} loading="lazy" decoding="async" />)}
+              <span className="generated-system-orbit" aria-hidden="true" />
+            </div>
+            <p className="generated-system-note">{language === 'fa' ? 'تجسم مفهومی؛ بخشی از نقشه‌های پروژه نیست.' : 'Concept visualization; not a project drawing.'}</p>
             <div
               id="layer-description"
               className="layer-description"
