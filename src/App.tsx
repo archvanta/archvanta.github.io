@@ -8,7 +8,6 @@ import {
   useState,
 } from "react";
 import { GlobalHeader, EditorialNav } from "./components/GlobalHeader";
-import { SiteEntrance } from "./components/SiteEntrance";
 import { GlobalFooter } from "./components/GlobalFooter";
 import { AccountToast } from "./components/account/AccountToast";
 import { Loading } from "./components/States";
@@ -105,9 +104,6 @@ export function App({
         </main>
         <GlobalFooter />
         <AccountToast />
-        <SiteEntrance
-          enabled={route.kind === "brand" && route.page === "home"}
-        />
       </AccountProvider>
     </DataProvider>
   );

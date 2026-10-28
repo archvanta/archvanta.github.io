@@ -1,10 +1,5 @@
 import { test, expect } from "@playwright/test";
 import AxeBuilder from "@axe-core/playwright";
-test.beforeEach(async ({ page }) => {
-  await page.addInitScript(() =>
-    sessionStorage.setItem("archvanta:entrance-seen:v1", "1"),
-  );
-});
 for (const locale of ["en", "fa"])
   for (const width of [360, 390, 768, 1024, 1440, 1920])
     test(`unified routes and layout ${locale} ${width}`, async ({ page }) => {
@@ -77,10 +72,19 @@ test("one shell connects home, portfolio, projects and editorial deep links", as
 }) => {
   await page.emulateMedia({ reducedMotion: "reduce" });
   await page.goto("/");
-  await expect(page.locator("h1")).toHaveText("ARCHVANTA");
-  await page.locator(".hi-join").click();
+  await expect(page.locator("h1")).toHaveAccessibleName("ARCHVANTA");
+  await page.getByRole("button", { name: "Skip to projects" }).click();
+  await page.getByRole("link", { name: "All projects", exact: true }).last().click();
   await expect(page).toHaveURL(/#\/projects$/);
   await expect(page.locator(".av-project-card")).toHaveCount(12);
+  const projectCovers = await page
+    .locator(".av-project-card img")
+    .evaluateAll((images) => images.map((image) => image.getAttribute("src")));
+  expect(projectCovers.length).toBeGreaterThan(0);
+  for (const src of projectCovers) {
+    expect(src).toMatch(/^\/(work-media\/images|images)\//);
+    expect((await page.request.get(src!)).status()).toBe(200);
+  }
   await page.locator(".av-project-card").first().getByRole("link").click();
   await expect(page).toHaveURL(/#\/projects\/modular-data-centre$/);
   await page.reload();
@@ -134,7 +138,7 @@ test("local saved stories survive canonical route changes and reload", async ({
   await page.reload();
   await expect(page.locator("[data-testid=saved-row]")).toHaveCount(1);
   await page.locator(".av-wordmark").click();
-  await expect(page.locator("h1")).toHaveText("ARCHVANTA");
+  await expect(page.locator("h1")).toHaveAccessibleName("ARCHVANTA");
   await page.goto("/#/frontier/saved");
   await expect(page.locator("[data-testid=saved-row]")).toHaveCount(1);
 });
@@ -200,12 +204,12 @@ test("lab tools are preserved and WebGL is not loaded until requested", async ({
   await page.locator(".av-model-launch").click();
   await expect(page.locator("iframe")).toHaveAttribute(
     "src",
-    "/portfolio/models/obj-server-rack-800x1200x2040.html",
+    "/work-media/models/obj-server-rack-800x1200x2040.html",
   );
   expect(
     (
       await page.request.get(
-        "/portfolio/models/obj-server-rack-800x1200x2040.html",
+        "/work-media/models/obj-server-rack-800x1200x2040.html",
       )
     ).status(),
   ).toBe(200);
@@ -250,6 +254,10 @@ test("liquid navigation preserves disclosures, route focus and CSP", async ({
     ),
   );
   await page.goto("/");
+  await expect(page.locator(".nimbus-nav canvas")).toHaveCount(0);
+  await expect(page.locator(".nimbus-nav .nimbus-drop")).toHaveCount(1);
+  await page.getByRole("button", { name: "Skip to projects" }).click();
+  await expect(page.locator(".circular-testimonials").first()).toBeInViewport();
   await page
     .locator(".nimbus-nav")
     .getByRole("button", { name: "Projects", exact: true })
@@ -280,20 +288,89 @@ test("circular project stories switch locally without capturing page arrow keys"
   await carousel.getByRole("link", { name: "Explore project" }).click();
   await expect(page).toHaveURL(/#\/projects\/technical-level-48-racks$/);
 });
-test("initial introduction is skippable, session-only and bypassed for deep links", async ({
+test("opening is a permanent scroll chapter, skips to projects and stays off deep links", async ({
   page,
 }) => {
-  await page.addInitScript(() =>
-    sessionStorage.removeItem("archvanta:entrance-seen:v1"),
-  );
+  await page.emulateMedia({ reducedMotion: "reduce" });
   await page.goto("/");
-  await expect(page.locator(".old-masters-preloader")).toBeVisible();
-  await page.getByRole("button", { name: "Skip introduction" }).click();
-  await expect(page.locator(".old-masters-preloader")).toHaveCount(0);
+  await expect(page.locator(".parallax")).toBeVisible();
+  await expect(page.locator("[data-parallax-layer]")).toHaveCount(4);
+  await expect(page.locator(".expertise .brand-glyph")).toHaveCount(4);
+  await page.getByRole("button", { name: "Skip to projects" }).click();
+  await expect(page.locator(".circular-testimonials").first()).toBeInViewport();
+  await expect(page.locator(".parallax")).toHaveCount(1);
   await page.evaluate(() => (location.hash = "#/projects"));
   await expect(page.locator("main h1")).toHaveText("Projects");
+  await expect(page.locator(".parallax")).toHaveCount(0);
   await page.evaluate(() => (location.hash = "#/"));
-  await expect(page.locator(".old-masters-preloader")).toHaveCount(0);
+  await expect(page.locator(".parallax")).toBeVisible();
   await page.goto("/#/projects");
-  await expect(page.locator(".old-masters-preloader")).toHaveCount(0);
+  await expect(page.locator(".parallax")).toHaveCount(0);
+});
+
+test("parallax layers reverse on upward scroll and release smooth scrolling on route changes", async ({ page }) => {
+  const computerMedia: string[] = [];
+  page.on("request", request => {
+    if (/frontier-hero\.(mp4|webp)|frontier-hero-poster/.test(request.url())) computerMedia.push(request.url());
+  });
+  await page.emulateMedia({ reducedMotion: "no-preference" });
+  await page.goto("/");
+  const opening = page.locator(".parallax");
+  await expect(page.locator('html')).toHaveClass(/lenis/);
+  await expect(page.locator('h1')).toHaveAccessibleName('ARCHVANTA');
+  await page.evaluate(() => window.scrollTo(0, 450));
+  const offsets = () => page.locator('[data-parallax-layer]').evaluateAll(elements => elements.map(e => new DOMMatrixReadOnly(getComputedStyle(e).transform).m42));
+  await expect.poll(async () => (await offsets())[0]).toBeGreaterThan(20);
+  const positions = await offsets();
+  expect(positions[0]).toBeGreaterThan(positions[1]);
+  expect(positions[1]).toBeGreaterThan(positions[2]);
+  expect(positions[2]).toBeGreaterThan(positions[3]);
+  await page.evaluate(() => window.scrollTo(0, 0));
+  await expect.poll(async () => Math.abs((await offsets())[0])).toBeLessThan(1);
+  await expect(page.locator('.parallax__title')).toBeInViewport();
+  expect(computerMedia).toEqual([]);
+  await expect(opening.locator("video")).toHaveCount(0);
+  expect(await page.evaluate(() => document.documentElement.scrollWidth - innerWidth)).toBeLessThanOrEqual(1);
+  await page.goto('/#/projects');
+  await expect(page.locator('html')).not.toHaveClass(/lenis/);
+  await page.goto('/');
+  await expect(page.locator('html')).toHaveClass(/lenis/);
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  await expect(page.locator('html')).not.toHaveClass(/lenis/);
+  await expect(opening).toHaveAttribute('data-motion', 'reduced');
+});
+
+test("shared English and Persian fonts are loaded and used by form controls", async ({ page }) => {
+  await page.goto("/#/projects");
+  await page.evaluate(() => document.fonts.ready);
+  expect(await page.locator("body").evaluate(e => getComputedStyle(e).fontFamily)).toContain("Inter Variable");
+  await page.addInitScript(() => localStorage.setItem("signal-ai:locale", "fa"));
+  await page.reload();
+  await expect(page.locator("html")).toHaveAttribute("lang", "fa");
+  expect(await page.locator("body").evaluate(e => getComputedStyle(e).fontFamily)).toContain("Vazirmatn Variable");
+  expect(await page.locator("#site-search").evaluate(e => getComputedStyle(e).fontFamily)).toContain("Vazirmatn Variable");
+});
+
+test("studio actions connect real projects, discipline pages and model tools", async ({ page }) => {
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  await page.goto('/');
+  await page.locator('.studio-hero-actions').getByRole('link', { name: 'Explore projects' }).click();
+  await expect(page).toHaveURL(/#\/projects$/);
+  const count = await page.locator('.av-project-card').count();
+  await expect(page.locator('.work-filters a').first().locator('.studio-filter-count')).toHaveText(String(count));
+  await page.goto('/');
+  await page.locator('.studio-discipline-index a').nth(2).click();
+  await expect(page).toHaveURL(/#\/expertise\/infrastructure$/);
+  await page.goto('/');
+  await page.locator('.studio-hero-actions').getByRole('link', { name: 'Enter the Lab' }).click();
+  await expect(page).toHaveURL(/#\/lab$/);
+  await expect(page.locator('.studio-lab-schematic')).toHaveCount(5);
+  await page.locator('.av-lab-item').nth(1).click();
+  await expect(page.locator('.av-model-launch')).toBeVisible();
+  await expect(page.locator('.av-model-view iframe')).toHaveCount(0);
+  await page.goto('/#/contact');
+  await page.locator('.back-top').scrollIntoViewIfNeeded();
+  await page.locator('.back-top').click();
+  await expect.poll(() => page.evaluate(() => window.scrollY)).toBe(0);
+  await expect(page).toHaveURL(/#\/contact$/);
 });

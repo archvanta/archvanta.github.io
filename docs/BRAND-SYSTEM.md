@@ -4,11 +4,15 @@ ARCHVANTA is the parent brand; FRONTIER is its editorial publication. FRONTIER's
 
 `src/styles/tokens.css` is authoritative. `src/styles/brand.css` scopes the previous brand layout beneath `.av-brand` and aliases its colors/fonts to the shared tokens. `unified.css` adds canonical shell, project/gallery, lab and creator layouts. No independent theme/locale provider remains.
 
+`src/styles/studio.css` adds the architectural finish across the brand layouts and shared footer. Fine static grids, original schematic drawings and typography connect the manifesto, work, expertise, Lab and creator sections. See `docs/STUDIO-EXPERIENCE.md` for the final home sequence and interaction details.
+
+Typography uses the locally bundled FRONTIER families throughout: Inter Variable for English text/headings, JetBrains Mono for technical metadata, and Vazirmatn Variable for all Persian roles and form controls. Explicit English content retains Inter inside Persian pages.
+
 User-supplied UI integrations live in `src/components/ui`:
 
-- Nimbus Liquid Navbar / Waterline, attributed in source to guglielmogiannattasio.it: actual internal navigation, existing disclosure menus and keyboard behavior. Shader runs during interaction, stops when settled/hidden; no ambient rendering or SVG refraction. Reduced/lite/mobile uses the CSS drop. Sound is disabled.
+- Nimbus Liquid Navbar / Waterline, attributed in source to guglielmogiannattasio.it: actual internal navigation, existing disclosure menus and keyboard behavior. The active state is one measured CSS glass pill with a short transform, so rapid route changes cannot leave a spring or WebGL layer trailing behind the selected item. Sound is disabled.
 - CircularTestimonials: image composition used for real selected project summaries, not endorsements. No placeholder restaurant testimonials. Scoped keyboard behavior, theme tokens, RTL controls, lazy images, no per-word blur; autoplay disabled in the application.
-- Old Masters Preloader: marble cast assets extracted from the supplied demo into local WebP files; outline/fill wordmark, meander and curtain reveal adapted for a brief initial introduction. No injected Google Fonts or continuous canvas/parallax. Dismissible native modal, session-only; reduced/lite motion and direct links bypass it. Progress measures scene image/font settlement, not news loading; stalled assets have a timeout.
+- Parallax opening: the supplied Osmo / 21st.dev mountain scene with its original three image layers, self-hosted locally. ARCHVANTA sits between the mountain and foreground person. GSAP/ScrollTrigger preserves 70/55/40/10% layer travel; Lenis provides smooth wheel scrolling with native touch behavior. Scoped cleanup releases the ticker, timeline and smooth scrolling on route changes. Reduced/lite motion presents the static scene. The prior statues and computer film/poster are not mounted. See `docs/PARALLAX-UI.md` for paths, setup and demo usage.
 
 TypeScript and React/Vite were already installed. Tailwind 4 is configured through its Vite plugin with utilities only, avoiding a second CSS reset. `components.json` and `@/` aliases provide the shadcn-compatible `src/components/ui` directory. `src/lib/utils.ts` exports standard `cn`; Framer Motion and react-icons are installed for the supplied carousel. Do not run a second project scaffold over this app.
 

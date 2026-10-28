@@ -21,11 +21,11 @@ import {
   type ProjectRecord,
 } from "../../content/catalog";
 import { CircularTestimonials } from "../../components/ui/circular-testimonials";
-import { MasterHero } from "../../components/MasterHero";
+import { ParallaxComponent } from "../../components/ui/parallax-scrolling";
+import { CreatorSignature, LabSchematic } from "../../components/StudioDetails";
 import { StoryCard } from "../../components/StoryCard";
 import { Icon } from "../../components/Icon";
 import { EmptyState, ErrorState, Loading } from "../../components/States";
-import { Perspective } from "../sections/Perspective";
 import { Expertise } from "../sections/Expertise";
 import { Systems } from "../sections/Systems";
 import { About } from "../sections/About";
@@ -95,7 +95,7 @@ function SelectedWork() {
   const { locale } = useI18n();
   const m = messages[locale];
   return (
-    <section className="section section-wrap">
+    <section className="section section-wrap studio-selected-work" id="selected-work">
       <div className="av-section-top">
         <div>
           <p className="eyebrow">ARCHVANTA / PROJECTS</p>
@@ -164,6 +164,7 @@ function Creator({ full = false }: { full?: boolean }) {
         </a>
       </div>
       <div className="av-creator-note">
+        <CreatorSignature />
         <p>
           {locale === "fa"
             ? "رویکردی که از ساختمان موجود شروع می‌شود: فضا، مدل، هماهنگی و مستنداتی که قابل خواندن و بررسی باشند."
@@ -266,7 +267,7 @@ function NewsPreview({ insights = false }: { insights?: boolean }) {
             `${a.title} ${a.excerpt}`,
           ),
       )
-      .slice(0, insights ? 3 : 6);
+      .slice(0, 3);
   }, [data, insights]);
   return (
     <section className="av-news-preview">
@@ -353,6 +354,7 @@ function LabOverview({ short = false }: { short?: boolean }) {
               name={i === 1 ? "server" : i === 2 ? "chip" : "box"}
               size={36}
             />
+            <LabSchematic variant={i} />
             <h3>{tr(obj.title, locale)}</h3>
             <p>
               {locale === "fa"
@@ -423,7 +425,7 @@ function ModelView({ slug }: { slug?: string }) {
           {load ? (
             <iframe
               title={obj.title}
-              src={`/portfolio/models/${obj.file}.html`}
+              src={`/work-media/models/${obj.file}.html`}
               sandbox="allow-scripts allow-downloads"
               allow="fullscreen"
             />
@@ -464,6 +466,7 @@ function Projects({ category = "all" }: { category?: string }) {
               aria-current={category === c.id ? "page" : undefined}
             >
               {c[locale]}
+              <span className="studio-filter-count">{projectCatalog(locale).filter(p => projectMatches(p, c.id)).length}</span>
             </a>
           ))}
         </div>
@@ -612,13 +615,13 @@ function ProjectDetail({ slug }: { slug?: string }) {
                   <button
                     onClick={() =>
                       setActive({
-                        src: `/portfolio/images/pp-${slug}-${String(i + 1).padStart(2, "0")}.webp`,
+                        src: `/work-media/images/pp-${slug}-${String(i + 1).padStart(2, "0")}.webp`,
                         label: `${i + 1} / ${proposal.pages}`,
                       })
                     }
                   >
                     <img
-                      src={`/portfolio/images/pp-${slug}-${String(i + 1).padStart(2, "0")}.webp`}
+                      src={`/work-media/images/pp-${slug}-${String(i + 1).padStart(2, "0")}.webp`}
                       alt={`${p.title} — ${locale === "fa" ? "صفحه" : "page"} ${i + 1}`}
                       loading="lazy"
                       decoding="async"
@@ -741,16 +744,14 @@ export default function BrandPages({ route }: { route: BrandRoute }) {
     <div className="av-brand">
       {route.page === "home" ? (
         <>
-          <MasterHero />
-          <Perspective />
-          <Expertise />
+          <ParallaxComponent />
           <SelectedWork />
+          <Expertise />
           <Systems />
+          <LabOverview short />
           <Creator />
           <NewsPreview />
-          <LabOverview short />
           <Process />
-          <NewsPreview insights />
           <Contact />
         </>
       ) : route.page === "projects" ? (
