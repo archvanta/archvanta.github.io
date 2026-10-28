@@ -1,17 +1,21 @@
 /* The existing FRONTIER token and motion systems are authoritative. */
 .av-header {
   position: sticky;
+  height: var(--header-h);
   top: 0;
   z-index: 100;
   background: var(--header-bg);
   border-bottom: 1px solid var(--header-line);
   box-shadow: var(--header-shadow);
 }
+.av-header:focus-within { z-index: 130; }
+.av-header .nav-tile .brand-glyph { width: 44px; height: 38px; stroke: var(--text-2); stroke-width: 1.3; }
 .av-header-inner {
   max-inline-size: 1480px;
-  min-block-size: 72px;
+  block-size: 100%;
+  min-block-size: 0;
   margin: auto;
-  padding: 10px 24px;
+  padding: 8px 24px;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -705,10 +709,12 @@
   color: #cbd0e5 !important;
   font-size: 8px;
 }
-.av-lab-item h3 {
+.av-brand .av-lab-item h3 {
   font-size: 22px;
+  color: #fff;
 }
-.av-lab-item p {
+.av-brand .av-lab-item > .icon { color: #fff; }
+.av-brand .av-lab-item p {
   font-size: 13px;
   line-height: 1.9;
   color: #d5dae7;
@@ -859,7 +865,7 @@
     display: grid;
   }
   .av-header-inner {
-    min-block-size: 66px;
+    min-block-size: 0;
   }
   .av-header .nav-panel {
     inline-size: 100%;

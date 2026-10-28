@@ -8,6 +8,7 @@
 }
 
 html {
+  scrollbar-gutter: stable;
   background: var(--bg);
   color: var(--text);
   font-family: var(--font-body);
@@ -22,6 +23,11 @@ html {
 html[lang='fa'] {
   font-family: var(--font-fa);
   line-height: 1.8;
+}
+
+html[lang='fa'] body,
+html[lang='fa'] :is(button, input, select, textarea) {
+  font-family: var(--font-fa);
 }
 
 body {
@@ -76,7 +82,8 @@ a:hover {
 
 button,
 input,
-select {
+select,
+textarea {
   font: inherit;
   color: inherit;
 }

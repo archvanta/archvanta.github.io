@@ -1,10 +1,5 @@
 import { test, expect } from "@playwright/test";
 import AxeBuilder from "@axe-core/playwright";
-test.beforeEach(async ({ page }) => {
-  await page.addInitScript(() =>
-    sessionStorage.setItem("archvanta:entrance-seen:v1", "1"),
-  );
-});
 for (const locale of ["en", "fa"])
   for (const width of [360, 390, 768, 1024, 1440, 1920])
     test(`unified routes and layout ${locale} ${width}`, async ({ page }) => {
@@ -78,9 +73,17 @@ test("one shell connects home, portfolio, projects and editorial deep links", as
   await page.emulateMedia({ reducedMotion: "reduce" });
   await page.goto("/");
   await expect(page.locator("h1")).toHaveText("ARCHVANTA");
-  await page.locator(".hi-join").click();
+  await page.locator(".om-opening-cta").click();
   await expect(page).toHaveURL(/#\/projects$/);
   await expect(page.locator(".av-project-card")).toHaveCount(12);
+  const projectCovers = await page
+    .locator(".av-project-card img")
+    .evaluateAll((images) => images.map((image) => image.getAttribute("src")));
+  expect(projectCovers.length).toBeGreaterThan(0);
+  for (const src of projectCovers) {
+    expect(src).toMatch(/^\/(work-media\/images|images)\//);
+    expect((await page.request.get(src!)).status()).toBe(200);
+  }
   await page.locator(".av-project-card").first().getByRole("link").click();
   await expect(page).toHaveURL(/#\/projects\/modular-data-centre$/);
   await page.reload();
@@ -200,12 +203,12 @@ test("lab tools are preserved and WebGL is not loaded until requested", async ({
   await page.locator(".av-model-launch").click();
   await expect(page.locator("iframe")).toHaveAttribute(
     "src",
-    "/portfolio/models/obj-server-rack-800x1200x2040.html",
+    "/work-media/models/obj-server-rack-800x1200x2040.html",
   );
   expect(
     (
       await page.request.get(
-        "/portfolio/models/obj-server-rack-800x1200x2040.html",
+        "/work-media/models/obj-server-rack-800x1200x2040.html",
       )
     ).status(),
   ).toBe(200);
@@ -250,6 +253,10 @@ test("liquid navigation preserves disclosures, route focus and CSP", async ({
     ),
   );
   await page.goto("/");
+  await expect(page.locator(".nimbus-nav canvas")).toHaveCount(0);
+  await expect(page.locator(".nimbus-nav .nimbus-drop")).toHaveCount(1);
+  await page.getByRole("button", { name: "Skip to projects" }).click();
+  await expect(page.locator(".circular-testimonials").first()).toBeInViewport();
   await page
     .locator(".nimbus-nav")
     .getByRole("button", { name: "Projects", exact: true })
@@ -280,20 +287,52 @@ test("circular project stories switch locally without capturing page arrow keys"
   await carousel.getByRole("link", { name: "Explore project" }).click();
   await expect(page).toHaveURL(/#\/projects\/technical-level-48-racks$/);
 });
-test("initial introduction is skippable, session-only and bypassed for deep links", async ({
+test("opening is a permanent scroll chapter, skips to projects and stays off deep links", async ({
   page,
 }) => {
-  await page.addInitScript(() =>
-    sessionStorage.removeItem("archvanta:entrance-seen:v1"),
-  );
+  await page.emulateMedia({ reducedMotion: "reduce" });
   await page.goto("/");
   await expect(page.locator(".old-masters-preloader")).toBeVisible();
-  await page.getByRole("button", { name: "Skip introduction" }).click();
-  await expect(page.locator(".old-masters-preloader")).toHaveCount(0);
+  await expect(page.locator(".om-opening-intro")).toBeAttached();
+  await expect(page.locator(".om-opening-hero")).toBeAttached();
+  await expect(page.locator(".om-opening-system .brand-glyph")).toHaveCount(4);
+  await page.getByRole("button", { name: "Skip to projects" }).click();
+  await expect(page.locator(".circular-testimonials").first()).toBeInViewport();
+  await expect(page.locator(".old-masters-preloader")).toHaveCount(1);
   await page.evaluate(() => (location.hash = "#/projects"));
   await expect(page.locator("main h1")).toHaveText("Projects");
-  await page.evaluate(() => (location.hash = "#/"));
   await expect(page.locator(".old-masters-preloader")).toHaveCount(0);
+  await page.evaluate(() => (location.hash = "#/"));
+  await expect(page.locator(".old-masters-preloader")).toBeVisible();
   await page.goto("/#/projects");
   await expect(page.locator(".old-masters-preloader")).toHaveCount(0);
+});
+
+test("full-motion opening follows scroll without closing or moving the document sideways", async ({ page }) => {
+  await page.emulateMedia({ reducedMotion: "no-preference" });
+  await page.goto("/");
+  const opening = page.locator(".av-opening");
+  await expect(opening).toHaveAttribute("data-ready", "true");
+  for (const [progress, chapter] of [[0, "intro"], [0.48, "hero"], [0.9, "system"]] as const) {
+    await opening.evaluate((element, ratio) => {
+      window.scrollTo(0, element.getBoundingClientRect().top + window.scrollY + (element.clientHeight - innerHeight) * ratio);
+    }, progress);
+    await expect(opening).toHaveAttribute("data-chapter", chapter);
+    const stageTop = await page.locator(".om-opening-stage").evaluate(e => e.getBoundingClientRect().top);
+    expect(Math.abs(stageTop - await page.locator(".av-header").evaluate(e => e.getBoundingClientRect().bottom))).toBeLessThan(2);
+    expect(await page.evaluate(() => document.documentElement.scrollWidth - innerWidth)).toBeLessThanOrEqual(1);
+  }
+  await page.locator(".om-opening-disciplines a").first().click();
+  await expect(page).toHaveURL(/#\/expertise\/architecture$/);
+});
+
+test("shared English and Persian fonts are loaded and used by form controls", async ({ page }) => {
+  await page.goto("/#/projects");
+  await page.evaluate(() => document.fonts.ready);
+  expect(await page.locator("body").evaluate(e => getComputedStyle(e).fontFamily)).toContain("Inter Variable");
+  await page.addInitScript(() => localStorage.setItem("signal-ai:locale", "fa"));
+  await page.reload();
+  await expect(page.locator("html")).toHaveAttribute("lang", "fa");
+  expect(await page.locator("body").evaluate(e => getComputedStyle(e).fontFamily)).toContain("Vazirmatn Variable");
+  expect(await page.locator("#site-search").evaluate(e => getComputedStyle(e).fontFamily)).toContain("Vazirmatn Variable");
 });

@@ -21,11 +21,10 @@ import {
   type ProjectRecord,
 } from "../../content/catalog";
 import { CircularTestimonials } from "../../components/ui/circular-testimonials";
-import { MasterHero } from "../../components/MasterHero";
+import OldMastersOpening from "../../components/ui/old-masters-preloader";
 import { StoryCard } from "../../components/StoryCard";
 import { Icon } from "../../components/Icon";
 import { EmptyState, ErrorState, Loading } from "../../components/States";
-import { Perspective } from "../sections/Perspective";
 import { Expertise } from "../sections/Expertise";
 import { Systems } from "../sections/Systems";
 import { About } from "../sections/About";
@@ -423,7 +422,7 @@ function ModelView({ slug }: { slug?: string }) {
           {load ? (
             <iframe
               title={obj.title}
-              src={`/portfolio/models/${obj.file}.html`}
+              src={`/work-media/models/${obj.file}.html`}
               sandbox="allow-scripts allow-downloads"
               allow="fullscreen"
             />
@@ -612,13 +611,13 @@ function ProjectDetail({ slug }: { slug?: string }) {
                   <button
                     onClick={() =>
                       setActive({
-                        src: `/portfolio/images/pp-${slug}-${String(i + 1).padStart(2, "0")}.webp`,
+                        src: `/work-media/images/pp-${slug}-${String(i + 1).padStart(2, "0")}.webp`,
                         label: `${i + 1} / ${proposal.pages}`,
                       })
                     }
                   >
                     <img
-                      src={`/portfolio/images/pp-${slug}-${String(i + 1).padStart(2, "0")}.webp`}
+                      src={`/work-media/images/pp-${slug}-${String(i + 1).padStart(2, "0")}.webp`}
                       alt={`${p.title} — ${locale === "fa" ? "صفحه" : "page"} ${i + 1}`}
                       loading="lazy"
                       decoding="async"
@@ -741,9 +740,7 @@ export default function BrandPages({ route }: { route: BrandRoute }) {
     <div className="av-brand">
       {route.page === "home" ? (
         <>
-          <MasterHero />
-          <Perspective />
-          <Expertise />
+          <OldMastersOpening />
           <SelectedWork />
           <Systems />
           <Creator />
