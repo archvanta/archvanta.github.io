@@ -25,3 +25,4 @@ createRoot(document.getElementById('root')!).render(
   </StrictMode>,
 );
 import './styles/unified.css';
+import './styles/studio.css';

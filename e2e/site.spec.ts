@@ -350,3 +350,27 @@ test("shared English and Persian fonts are loaded and used by form controls", as
   expect(await page.locator("body").evaluate(e => getComputedStyle(e).fontFamily)).toContain("Vazirmatn Variable");
   expect(await page.locator("#site-search").evaluate(e => getComputedStyle(e).fontFamily)).toContain("Vazirmatn Variable");
 });
+
+test("studio actions connect real projects, discipline pages and model tools", async ({ page }) => {
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  await page.goto('/');
+  await page.locator('.studio-hero-actions').getByRole('link', { name: 'Explore projects' }).click();
+  await expect(page).toHaveURL(/#\/projects$/);
+  const count = await page.locator('.av-project-card').count();
+  await expect(page.locator('.work-filters a').first().locator('.studio-filter-count')).toHaveText(String(count));
+  await page.goto('/');
+  await page.locator('.studio-discipline-index a').nth(2).click();
+  await expect(page).toHaveURL(/#\/expertise\/infrastructure$/);
+  await page.goto('/');
+  await page.locator('.studio-hero-actions').getByRole('link', { name: 'Enter the Lab' }).click();
+  await expect(page).toHaveURL(/#\/lab$/);
+  await expect(page.locator('.studio-lab-schematic')).toHaveCount(5);
+  await page.locator('.av-lab-item').nth(1).click();
+  await expect(page.locator('.av-model-launch')).toBeVisible();
+  await expect(page.locator('.av-model-view iframe')).toHaveCount(0);
+  await page.goto('/#/contact');
+  await page.locator('.back-top').scrollIntoViewIfNeeded();
+  await page.locator('.back-top').click();
+  await expect.poll(() => page.evaluate(() => window.scrollY)).toBe(0);
+  await expect(page).toHaveURL(/#\/contact$/);
+});

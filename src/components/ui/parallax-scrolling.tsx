@@ -6,6 +6,10 @@ import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import Lenis from '@studio-freight/lenis';
 import { useMotionMode } from '../../lib/motion';
 import { useI18n } from '../../lib/i18n';
+import { brandHref } from '../../lib/unifiedRouter';
+import { BrandMark } from '../../brand/components/Brand';
+import { DisciplineIndex } from '../StudioDetails';
+import { Icon } from '../Icon';
 import './parallax-scrolling.css';
 
 /** Adapted from the user-supplied Osmo / 21st.dev layered parallax scene. */
@@ -96,14 +100,29 @@ export function ParallaxComponent({ title = 'ARCHVANTA' }: { title?: string }) {
             <span lang="en">ARCHITECTURE / INFRASTRUCTURE / DIGITAL INTELLIGENCE</span>
             <button type="button" onClick={skip}>{locale === 'fa' ? 'رفتن به پروژه‌ها' : 'Skip to projects'} <span aria-hidden="true">↓</span></button>
           </div>
+          <div className="studio-hero-bottom">
+            <div>
+              <p className="studio-hero-label">{locale === 'fa' ? 'یک نگاه مستقل به طراحی' : 'AN INDEPENDENT DESIGN PERSPECTIVE'}</p>
+              <p className="studio-hero-description">{locale === 'fa' ? 'از فضا تا سیستم؛ معماری، زیرساخت و تجربه‌های دیجیتال در یک مسیر.' : 'From space to systems. Architecture, infrastructure and digital experiences, connected.'}</p>
+            </div>
+            <div className="studio-hero-actions">
+              <a className="studio-pill" href={brandHref('/projects')}>{locale === 'fa' ? 'کشف پروژه‌ها' : 'Explore projects'}<Icon name="arrow" directional size={18} /></a>
+              <a className="studio-hero-lab" href={brandHref('/lab')}>{locale === 'fa' ? 'ورود به آزمایشگاه' : 'Enter the Lab'}<Icon name="arrow" directional size={16} /></a>
+            </div>
+          </div>
           <p className="parallax__scroll">{locale === 'fa' ? 'برای کشف بیشتر اسکرول کن' : 'SCROLL TO EXPLORE'} <span aria-hidden="true">↓</span></p>
         </div>
       </section>
       <section className="parallax__content" aria-label={locale === 'fa' ? 'نگاه آرک‌ونتا' : 'The ARCHVANTA perspective'}>
-        <svg viewBox="0 0 160 160" fill="none" className="osmo-icon-svg" aria-hidden="true">
-          <path d="M94.8284 53.8578C92.3086 56.3776 88 54.593 88 51.0294V0H72V59.9999C72 66.6273 66.6274 71.9999 60 71.9999H0V87.9999H51.0294C54.5931 87.9999 56.3777 92.3085 53.8579 94.8283L18.3431 130.343L29.6569 141.657L65.1717 106.142C67.684 103.63 71.9745 105.396 72 108.939V160L88.0001 160L88 99.9999C88 93.3725 93.3726 87.9999 100 87.9999H160V71.9999H108.939C105.407 71.9745 103.64 67.7091 106.12 65.1938L106.142 65.1716L141.657 29.6568L130.343 18.3432L94.8284 53.8578Z" fill="currentColor" />
-        </svg>
-        <h2>{locale === 'fa' ? <>طراحی فضا.<br />مهندسی آینده.</> : <>Designing Space.<br />Engineering the Future.</>}</h2>
+        <div className="studio-manifesto">
+          <div className="studio-manifesto-label"><BrandMark /><span>ARCHVANTA / 01</span></div>
+          <h2>{locale === 'fa' ? <>طراحی فضا.<br /><span>مهندسی آینده.</span></> : <>Designing Space.<br /><span>Engineering the Future.</span></>}</h2>
+          <div className="studio-manifesto-body">
+            <p>{locale === 'fa' ? 'معماری فقط ساختن یک حجم نیست؛ هماهنگی فضا، تجهیزات و اطلاعات است. آرک‌ونتا این ارتباط را از ایده و مدل تا مستندات و ابزارهای تعاملی دنبال می‌کند.' : 'Architecture extends beyond a building. It connects space, equipment and information. ARCHVANTA explores that connection through design studies, coordinated models and interactive tools.'}</p>
+            <a href={brandHref('/portfolio')}>{locale === 'fa' ? 'دیدگاه و کارهای محمدامین صادقی' : 'The work & perspective of MohammadAmin Sadeghi'}<Icon name="arrow" directional size={16} /></a>
+          </div>
+        </div>
+        <DisciplineIndex />
         <a className="parallax__credit" href="https://www.osmo.supply/" target="_blank" rel="noreferrer">Parallax resource by Osmo ↗</a>
       </section>
     </div>
