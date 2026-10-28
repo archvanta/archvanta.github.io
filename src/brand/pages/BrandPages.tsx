@@ -21,7 +21,7 @@ import {
   type ProjectRecord,
 } from "../../content/catalog";
 import { CircularTestimonials } from "../../components/ui/circular-testimonials";
-import OldMastersOpening from "../../components/ui/old-masters-preloader";
+import { ParallaxComponent } from "../../components/ui/parallax-scrolling";
 import { StoryCard } from "../../components/StoryCard";
 import { Icon } from "../../components/Icon";
 import { EmptyState, ErrorState, Loading } from "../../components/States";
@@ -740,7 +740,8 @@ export default function BrandPages({ route }: { route: BrandRoute }) {
     <div className="av-brand">
       {route.page === "home" ? (
         <>
-          <OldMastersOpening />
+          <ParallaxComponent />
+          <Expertise />
           <SelectedWork />
           <Systems />
           <Creator />
