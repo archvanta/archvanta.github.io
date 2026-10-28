@@ -28,3 +28,7 @@ Portfolio records and 184 images originate in `archvanta/portfolio` commit `863f
 The owner approved the generated architectural portal logo. `logo.webp`, `logo.png`, `public/favicon.png` and `public/apple-touch-icon.png` are optimized derivatives of that image. The red statue composition uses the previously supplied assets listed above. The historical Osmo mountain images remain available but are not loaded on home; the supplied parallax mechanics and resource attribution are retained.
 
 The owner-supplied résumé is published unchanged; its checksum and the static uploaded portfolio audit are recorded in `docs/migration/uploaded-portfolio-audit.md`. No scripts from the uploaded HTML were executed.
+
+## Minimal discipline revision
+
+The active discipline symbols are original flat monochrome SVG paths in `src/components/BrandGlyph.tsx`. They replace the generated metallic category images in the introduction, navigation, expertise and Lab. The systems section again uses the original procedural `ArchitecturalModel` with four selectable modes. The generated category and system images remain historical files, without runtime references from these sections. The independently approved logo and creator artwork are separate from the discipline icon family.

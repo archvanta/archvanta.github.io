@@ -380,23 +380,21 @@ test('uploaded portfolio proposals stay complete, with uniform drawing frames an
   await expect(page.locator('.cheghad-link')).toHaveAttribute('href','https://archvanta.github.io/cheghad/');
 });
 
-test('generated brand images and system layers replace wireframes; header stays outside page motion', async ({ page }) => {
+test('minimal discipline symbols and restored system layers work; header stays outside page motion', async ({ page }) => {
   await page.goto('/');
   // The development-only fixture banner is absent from the published shell.
   await page.evaluate(() => document.querySelector('.mock-banner')?.remove());
   await expect(page.locator('.statue-composition')).toHaveAttribute('data-ready','true');
-  await expect(page.locator('.brand-glyph').first()).toHaveJSProperty('tagName','IMG');
+  await expect(page.locator('.brand-glyph').first()).toHaveAttribute('viewBox','0 0 48 48');
+  await expect(page.locator('.brand-glyph img, .generated-system-stage')).toHaveCount(0);
   await expect(page.locator('.av-header')).toHaveCSS('view-transition-name','site-header');
   const group = page.getByRole('group', { name: 'Design layers' });
   await group.scrollIntoViewIfNeeded();
   for (let i=0;i<4;i++) {
     await group.getByRole('button').nth(i).click();
-    await expect(page.locator('.generated-system-stage')).toHaveAttribute('data-layer',String(i));
-    await expect(page.locator('.generated-system-stage img[data-active="true"]')).toHaveCount(1);
-    const active = page.locator('.generated-system-stage img[data-active="true"]');
-    await expect(active).toHaveJSProperty('complete', true);
-    expect(await active.evaluate(image => (image as HTMLImageElement).naturalWidth)).toBeGreaterThan(0);
-    expect((await active.boundingBox())!.width).toBeGreaterThan(200);
+    const model = page.locator('.systems-visual .architectural-model');
+    await expect(model).toHaveClass(`architectural-model model-mode-${[0,1,3,2][i]}`);
+    expect((await model.boundingBox())!.width).toBeGreaterThan(200);
   }
   await expect(page.locator('.studio-signature-name')).toHaveCount(0);
   await page.evaluate(() => {
