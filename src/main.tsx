@@ -1,15 +1,27 @@
-import { StrictMode } from "react";
-import { createRoot } from "react-dom/client";
-import "@fontsource-variable/space-grotesk";
-import "@fontsource-variable/vazirmatn";
-import { PreferencesProvider } from "./lib/preferences";
-import App from "./App";
-import "./styles/tokens.css";
-import "./styles/app.css";
-createRoot(document.getElementById("root")!).render(
+import './styles/utilities.css';
+import '@fontsource-variable/inter';
+import '@fontsource-variable/jetbrains-mono';
+import '@fontsource-variable/vazirmatn';
+import './styles/app.css';
+import './styles/motion.css';
+import './styles/account.css';
+import './styles/tunnel.css';
+import './styles/editorial.css';
+import { StrictMode } from 'react';
+import { createRoot } from 'react-dom/client';
+import { App } from './App';
+import { I18nProvider } from './lib/i18n';
+import { initMotion } from './lib/motion';
+import { initTheme } from './lib/theme';
+
+initTheme();
+initMotion();
+
+createRoot(document.getElementById('root')!).render(
   <StrictMode>
-    <PreferencesProvider>
+    <I18nProvider>
       <App />
-    </PreferencesProvider>
+    </I18nProvider>
   </StrictMode>,
 );
+import './styles/unified.css';
