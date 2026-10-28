@@ -1,12 +1,16 @@
-/* Generated artwork is rendered as small, centered images with local interaction motion. */
+/* Flat discipline symbols inherit the surrounding text color in either theme. */
 .av-wordmark > .brand-logo { width: 36px; height: 36px; object-fit: contain; flex: none; }
 .studio-manifesto-label > .brand-logo { width: 32px; height: 32px; object-fit: contain; }
-.brand-glyph { object-fit: contain; transition: transform 240ms var(--ease-out); }
-.nav-row:hover .brand-glyph, .studio-discipline-index a:hover .brand-glyph, .expertise-item:hover .brand-glyph { transform: translateY(-3px) rotate(-4deg) scale(1.06); }
-.av-header .nav-tile .brand-glyph { width: 46px; height: 46px; }
-.studio-discipline-index .brand-glyph { width: 48px; height: 48px; flex: none; }
-div.av-brand .expertise-diagram { width: 76px; height: 76px; object-fit: contain; }
-div.av-brand .studio-lab-schematic { height: 180px; object-fit: contain; }
+.brand-glyph { display: block; flex: none; width: 36px; height: 36px; }
+.brand-glyph path { stroke: none; }
+.brand-glyph, .av-header .nav-tile .brand-glyph, .studio-discipline-index .brand-glyph { stroke: none; }
+.av-header .nav-tile .brand-glyph { width: 32px; height: 32px; color: var(--text-2); }
+.studio-discipline-index .brand-glyph { width: 32px; height: 32px; color: #e5e5e8; }
+div.av-brand .expertise-item { grid-template-columns: 24px 48px minmax(0,1fr); gap: 16px; }
+div.av-brand .expertise-diagram { width: 44px; height: 44px; color: var(--text-2); }
+div.av-brand .expertise-copy h3 button { min-height: 44px; }
+div.av-brand .studio-lab-schematic { width: 64px; height: 64px; margin: 16px 0; color: #e5e5e8; }
+.av-lab-item:hover .studio-lab-schematic { transform: none; }
 div.av-brand .studio-signature-art { height: 340px; background: radial-gradient(ellipse at 50% 75%, var(--accent-soft), transparent 68%); }
 .studio-signature-art::after { display: none; }
 .studio-signature-art img { width: 100%; height: 100%; object-fit: contain; transition: transform 700ms var(--ease-out); }
@@ -21,12 +25,6 @@ div.av-brand .studio-signature-art { height: 340px; background: radial-gradient(
 .cheghad-link small { display: block; color: var(--text-2); font-size: 13px; margin-top: 6px; }
 .cheghad-open { display: flex; align-items: center; gap: 14px; margin-inline-start: auto; font-size: 12px; white-space: nowrap; }
 .cheghad-source { display: inline-flex; align-items: center; gap: 10px; padding-block: 16px; color: var(--text-3); font-size: 11px; }
-.generated-system-stage { position: relative; width: 100%; flex: none; aspect-ratio: 1; min-width: 0; perspective: 1000px; isolation: isolate; }
-div.av-brand .systems-visual .layer-description { margin: 0 28px 28px; }
-div.av-brand .generated-system-stage img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; opacity: 0; transform: translateY(16px) rotateY(-7deg) scale(.97); transition: opacity 400ms ease, transform 650ms var(--ease-out); pointer-events: none; }
-div.av-brand .generated-system-stage img[data-active="true"] { opacity: 1; transform: none; }
-.generated-system-orbit { position: absolute; inset: 10%; border: 1px solid var(--line); border-radius: 50%; z-index: -1; transform: rotateX(62deg); }
-div.av-brand .generated-system-note { padding: 0 26px 14px; color: var(--text-3); font: 10px/1.7 var(--font-body); }
 div.av-brand .av-gallery { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); align-items: start; gap: 24px; }
 div.av-brand .av-gallery figure { min-width: 0; display: grid; grid-template-rows: auto minmax(40px, auto); margin: 0; }
 div.av-brand .av-gallery button { display: block; width: 100%; aspect-ratio: 4/3; border: 1px solid var(--line-strong); border-radius: 18px; padding: 14px; background: #f5f5f6; }
@@ -78,10 +76,10 @@ div.av-brand .parallax--statues .parallax__fade { height: 12%; background: linea
   .parallax--statues .statue-title { bottom: 15%; }
   div.av-brand .av-gallery { grid-template-columns: 1fr; gap: 22px; }
   div.av-brand .av-gallery button { padding: 10px; border-radius: 14px; }
-  div.av-brand .expertise-diagram { width: 56px; height: 56px; }
+  div.av-brand .expertise-diagram { width: 40px; height: 40px; }
   div.av-brand .studio-signature-art { height: 300px; }
 }
 @media (prefers-reduced-motion: reduce) {
-  .statue-ring, .statue-figure, .statue-title > span, .brand-glyph, .studio-signature-art img, .generated-system-stage img { animation: none !important; transition: none !important; }
-  .nav-row:hover .brand-glyph, .studio-discipline-index a:hover .brand-glyph, .expertise-item:hover .brand-glyph, .av-creator-note:hover .studio-signature-art img { transform: none; }
+  .statue-ring, .statue-figure, .statue-title > span, .studio-signature-art img { animation: none !important; transition: none !important; }
+  .av-creator-note:hover .studio-signature-art img { transform: none; }
 }
