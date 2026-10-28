@@ -293,44 +293,51 @@ test("opening is a permanent scroll chapter, skips to projects and stays off dee
 }) => {
   await page.emulateMedia({ reducedMotion: "reduce" });
   await page.goto("/");
-  await expect(page.locator(".old-masters-preloader")).toBeVisible();
-  await expect(page.locator(".om-opening-intro")).toBeAttached();
-  await expect(page.locator(".om-opening-hero")).toHaveCount(0);
-  await expect(page.locator(".om-opening-system .brand-glyph")).toHaveCount(4);
+  await expect(page.locator(".parallax")).toBeVisible();
+  await expect(page.locator("[data-parallax-layer]")).toHaveCount(4);
+  await expect(page.locator(".expertise .brand-glyph")).toHaveCount(4);
   await page.getByRole("button", { name: "Skip to projects" }).click();
   await expect(page.locator(".circular-testimonials").first()).toBeInViewport();
-  await expect(page.locator(".old-masters-preloader")).toHaveCount(1);
+  await expect(page.locator(".parallax")).toHaveCount(1);
   await page.evaluate(() => (location.hash = "#/projects"));
   await expect(page.locator("main h1")).toHaveText("Projects");
-  await expect(page.locator(".old-masters-preloader")).toHaveCount(0);
+  await expect(page.locator(".parallax")).toHaveCount(0);
   await page.evaluate(() => (location.hash = "#/"));
-  await expect(page.locator(".old-masters-preloader")).toBeVisible();
+  await expect(page.locator(".parallax")).toBeVisible();
   await page.goto("/#/projects");
-  await expect(page.locator(".old-masters-preloader")).toHaveCount(0);
+  await expect(page.locator(".parallax")).toHaveCount(0);
 });
 
-test("statue scene stays intact when scrolling down and back, without computer media", async ({ page }) => {
+test("parallax layers reverse on upward scroll and release smooth scrolling on route changes", async ({ page }) => {
   const computerMedia: string[] = [];
   page.on("request", request => {
     if (/frontier-hero\.(mp4|webp)|frontier-hero-poster/.test(request.url())) computerMedia.push(request.url());
   });
   await page.emulateMedia({ reducedMotion: "no-preference" });
   await page.goto("/");
-  const opening = page.locator(".av-opening");
-  await expect(opening).toHaveAttribute("data-ready", "true");
-  await page.locator(".om-opening-disciplines").scrollIntoViewIfNeeded();
-  await page.locator(".om-opening-stage").evaluate(e => window.scrollTo(0, e.getBoundingClientRect().bottom + window.scrollY + 1));
-  await expect(page.locator(".om-opening-stage")).not.toBeInViewport();
+  const opening = page.locator(".parallax");
+  await expect(page.locator('html')).toHaveClass(/lenis/);
+  await expect(page.locator('h1')).toHaveAccessibleName('ARCHVANTA');
+  await page.evaluate(() => window.scrollTo(0, 450));
+  const offsets = () => page.locator('[data-parallax-layer]').evaluateAll(elements => elements.map(e => new DOMMatrixReadOnly(getComputedStyle(e).transform).m42));
+  await expect.poll(async () => (await offsets())[0]).toBeGreaterThan(20);
+  const positions = await offsets();
+  expect(positions[0]).toBeGreaterThan(positions[1]);
+  expect(positions[1]).toBeGreaterThan(positions[2]);
+  expect(positions[2]).toBeGreaterThan(positions[3]);
   await page.evaluate(() => window.scrollTo(0, 0));
-  await expect(page.locator(".om-opening-intro")).toBeInViewport();
-  await expect(opening).toHaveAttribute("data-ready", "true");
-  await expect(page.locator(".om-opening-cast img")).toHaveCount(3);
-  await expect(page.locator(".om-opening-intro")).toHaveCSS("opacity", "1");
+  await expect.poll(async () => Math.abs((await offsets())[0])).toBeLessThan(1);
+  await expect(page.locator('.parallax__title')).toBeInViewport();
   expect(computerMedia).toEqual([]);
   await expect(opening.locator("video")).toHaveCount(0);
   expect(await page.evaluate(() => document.documentElement.scrollWidth - innerWidth)).toBeLessThanOrEqual(1);
-  await page.locator(".om-opening-disciplines a").first().click();
-  await expect(page).toHaveURL(/#\/expertise\/architecture$/);
+  await page.goto('/#/projects');
+  await expect(page.locator('html')).not.toHaveClass(/lenis/);
+  await page.goto('/');
+  await expect(page.locator('html')).toHaveClass(/lenis/);
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  await expect(page.locator('html')).not.toHaveClass(/lenis/);
+  await expect(opening).toHaveAttribute('data-motion', 'reduced');
 });
 
 test("shared English and Persian fonts are loaded and used by form controls", async ({ page }) => {

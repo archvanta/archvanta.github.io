@@ -192,6 +192,7 @@ export function NavGroup({ group, open, onToggle, onClose, triggerClassName = ""
           ref={panel}
           id={panelId}
           className="nav-panel"
+          data-lenis-prevent
           data-state={closing ? 'closing' : 'open'}
           inert={closing}
           aria-label={group.label}

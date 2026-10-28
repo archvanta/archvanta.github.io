@@ -4,7 +4,7 @@ The canonical base is `/` at archvanta.github.io. Hash routing preserves refresh
 
 | Path after # | Content |
 |---|---|
-| / | Permanent red ARCHVANTA scroll opening, disciplines, selected work, model, creator, live editorial preview, lab, process and contact |
+| / | Osmo mountain parallax with ARCHVANTA, disciplines, selected work, model, creator, live editorial preview, lab, process and contact |
 | /expertise/:slug | Architecture, BIM, infrastructure and digital systems |
 | /projects?category=… | Nine sourced portfolio projects and three explicitly labeled concept studies |
 | /projects/:slug | Project, original status, roles, credits, gallery, proposal and related work |
