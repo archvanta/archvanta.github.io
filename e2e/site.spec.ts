@@ -72,8 +72,9 @@ test("one shell connects home, portfolio, projects and editorial deep links", as
 }) => {
   await page.emulateMedia({ reducedMotion: "reduce" });
   await page.goto("/");
-  await expect(page.locator("h1")).toHaveText("ARCHVANTA");
-  await page.locator(".om-opening-cta").click();
+  await expect(page.locator("h1")).toHaveAccessibleName("ARCHVANTA");
+  await page.getByRole("button", { name: "Skip to projects" }).click();
+  await page.getByRole("link", { name: "All projects", exact: true }).last().click();
   await expect(page).toHaveURL(/#\/projects$/);
   await expect(page.locator(".av-project-card")).toHaveCount(12);
   const projectCovers = await page
@@ -137,7 +138,7 @@ test("local saved stories survive canonical route changes and reload", async ({
   await page.reload();
   await expect(page.locator("[data-testid=saved-row]")).toHaveCount(1);
   await page.locator(".av-wordmark").click();
-  await expect(page.locator("h1")).toHaveText("ARCHVANTA");
+  await expect(page.locator("h1")).toHaveAccessibleName("ARCHVANTA");
   await page.goto("/#/frontier/saved");
   await expect(page.locator("[data-testid=saved-row]")).toHaveCount(1);
 });
@@ -294,7 +295,7 @@ test("opening is a permanent scroll chapter, skips to projects and stays off dee
   await page.goto("/");
   await expect(page.locator(".old-masters-preloader")).toBeVisible();
   await expect(page.locator(".om-opening-intro")).toBeAttached();
-  await expect(page.locator(".om-opening-hero")).toBeAttached();
+  await expect(page.locator(".om-opening-hero")).toHaveCount(0);
   await expect(page.locator(".om-opening-system .brand-glyph")).toHaveCount(4);
   await page.getByRole("button", { name: "Skip to projects" }).click();
   await expect(page.locator(".circular-testimonials").first()).toBeInViewport();
@@ -308,20 +309,26 @@ test("opening is a permanent scroll chapter, skips to projects and stays off dee
   await expect(page.locator(".old-masters-preloader")).toHaveCount(0);
 });
 
-test("full-motion opening follows scroll without closing or moving the document sideways", async ({ page }) => {
+test("statue scene stays intact when scrolling down and back, without computer media", async ({ page }) => {
+  const computerMedia: string[] = [];
+  page.on("request", request => {
+    if (/frontier-hero\.(mp4|webp)|frontier-hero-poster/.test(request.url())) computerMedia.push(request.url());
+  });
   await page.emulateMedia({ reducedMotion: "no-preference" });
   await page.goto("/");
   const opening = page.locator(".av-opening");
   await expect(opening).toHaveAttribute("data-ready", "true");
-  for (const [progress, chapter] of [[0, "intro"], [0.48, "hero"], [0.9, "system"]] as const) {
-    await opening.evaluate((element, ratio) => {
-      window.scrollTo(0, element.getBoundingClientRect().top + window.scrollY + (element.clientHeight - innerHeight) * ratio);
-    }, progress);
-    await expect(opening).toHaveAttribute("data-chapter", chapter);
-    const stageTop = await page.locator(".om-opening-stage").evaluate(e => e.getBoundingClientRect().top);
-    expect(Math.abs(stageTop - await page.locator(".av-header").evaluate(e => e.getBoundingClientRect().bottom))).toBeLessThan(2);
-    expect(await page.evaluate(() => document.documentElement.scrollWidth - innerWidth)).toBeLessThanOrEqual(1);
-  }
+  await page.locator(".om-opening-disciplines").scrollIntoViewIfNeeded();
+  await page.locator(".om-opening-stage").evaluate(e => window.scrollTo(0, e.getBoundingClientRect().bottom + window.scrollY + 1));
+  await expect(page.locator(".om-opening-stage")).not.toBeInViewport();
+  await page.evaluate(() => window.scrollTo(0, 0));
+  await expect(page.locator(".om-opening-intro")).toBeInViewport();
+  await expect(opening).toHaveAttribute("data-ready", "true");
+  await expect(page.locator(".om-opening-cast img")).toHaveCount(3);
+  await expect(page.locator(".om-opening-intro")).toHaveCSS("opacity", "1");
+  expect(computerMedia).toEqual([]);
+  await expect(opening.locator("video")).toHaveCount(0);
+  expect(await page.evaluate(() => document.documentElement.scrollWidth - innerWidth)).toBeLessThanOrEqual(1);
   await page.locator(".om-opening-disciplines a").first().click();
   await expect(page).toHaveURL(/#\/expertise\/architecture$/);
 });
