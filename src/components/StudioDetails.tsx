@@ -22,10 +22,9 @@ export function DisciplineIndex() {
   </nav>;
 }
 
-/** Generated category artwork shared with the brand navigation. */
+/** The same monochrome symbols used in the introduction and navigation. */
 export function LabSchematic({ variant }: { variant: number }) {
-  const asset = ['architecture', 'data-centers', 'digital-lab'][variant % 3];
-  return <img className="studio-lab-schematic" src={`/images/brand-art/${asset}.webp`} alt="" width="384" height="384" loading="lazy" decoding="async" />;
+  return <BrandGlyph mode={[0, 3, 1][variant % 3]!} className="studio-lab-schematic" />;
 }
 
 export function CreatorSignature() {
