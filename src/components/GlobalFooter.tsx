@@ -61,6 +61,10 @@ export function GlobalFooter() {
         </a>
         <small>© {new Date().getFullYear()} ARCHVANTA</small>
       </div>
+      <div className="studio-footer-signature" aria-hidden="true" dir="ltr">
+        <span>ARCHVANTA</span>
+        <span>SPACE / SYSTEMS / PERSPECTIVE</span>
+      </div>
     </footer>
   );
 }

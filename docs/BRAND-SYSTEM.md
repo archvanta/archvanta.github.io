@@ -4,6 +4,8 @@ ARCHVANTA is the parent brand; FRONTIER is its editorial publication. FRONTIER's
 
 `src/styles/tokens.css` is authoritative. `src/styles/brand.css` scopes the previous brand layout beneath `.av-brand` and aliases its colors/fonts to the shared tokens. `unified.css` adds canonical shell, project/gallery, lab and creator layouts. No independent theme/locale provider remains.
 
+`src/styles/studio.css` adds the architectural finish across the brand layouts and shared footer. Fine static grids, original schematic drawings and typography connect the manifesto, work, expertise, Lab and creator sections. See `docs/STUDIO-EXPERIENCE.md` for the final home sequence and interaction details.
+
 Typography uses the locally bundled FRONTIER families throughout: Inter Variable for English text/headings, JetBrains Mono for technical metadata, and Vazirmatn Variable for all Persian roles and form controls. Explicit English content retains Inter inside Persian pages.
 
 User-supplied UI integrations live in `src/components/ui`:
