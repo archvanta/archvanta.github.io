@@ -1,0 +1,70 @@
+import { render, screen, within } from '@testing-library/react';
+import { beforeEach, afterEach, vi, describe, expect, it } from 'vitest';
+import { App } from './App';
+import { createDataSource } from './lib/data';
+import { I18nProvider } from './lib/i18n';
+import type { Locale } from './lib/types';
+
+function renderApp(locale: Locale = 'en', hash = '#/frontier/') {
+  window.location.hash = hash;
+  return render(
+    <I18nProvider initial={locale}>
+      <App source={createDataSource('mock', new Date())} />
+    </I18nProvider>,
+  );
+}
+
+describe('App with mock data', () => {
+  beforeEach(() => {window.localStorage.clear();vi.setSystemTime(new Date('2026-10-28T18:00:00Z'));});
+  afterEach(()=>vi.useRealTimers());
+
+  it('renders hero, top signals, today and yesterday with a mock banner', async () => {
+    renderApp();
+    expect(screen.getByRole('note')).toHaveTextContent('MOCK DATA');
+    expect(await screen.findByRole('heading', { level: 1 })).toHaveTextContent('FRONTIER');
+    expect(await screen.findByRole('heading', { name: 'Top Signals' })).toBeInTheDocument();
+    const today = await screen.findByRole('heading', { name: 'Today' });
+    const yesterday = screen.getByRole('heading', { name: 'Yesterday' });
+    // Today comes before Yesterday in document order.
+    expect(today.compareDocumentPosition(yesterday) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    const todaySection = today.closest('section')!;
+    expect((await within(todaySection).findAllByTestId('story-card')).length).toBeGreaterThan(0);
+  });
+
+  it('orders cards newest first within a day', async () => {
+    renderApp();
+    const section = (await screen.findByRole('heading', { name: 'Today' })).closest('section')!;
+    const times = (await within(section)
+      .findAllByTestId('story-card'))
+      .map((c) => c.querySelector('time')!.getAttribute('datetime')!);
+    expect([...times].sort().reverse()).toEqual(times);
+  });
+
+  it('switches to Persian with RTL document direction', async () => {
+    renderApp('fa');
+    expect(await screen.findByRole('heading', { name: 'امروز' })).toBeInTheDocument();
+    expect(document.documentElement.dir).toBe('rtl');
+    expect(document.documentElement.lang).toBe('fa');
+  });
+
+  it('renders the hero carousel over real stories with a single active slide', async () => {
+    renderApp();
+    const slides = await screen.findAllByTestId('hero-slide');
+    expect(slides.length).toBeGreaterThanOrEqual(3);
+    expect(slides.filter((s) => s.getAttribute('aria-hidden') === 'false')).toHaveLength(1);
+    expect(screen.getByRole('button', { name: 'Next story' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Pause slideshow' })).toBeInTheDocument();
+    const active = slides.find((s) => s.getAttribute('aria-hidden') === 'false')!;
+    expect(within(active).getByRole('link', { name: /Story details/ })).toHaveAttribute('href', expect.stringContaining('#/frontier/story/'));
+  });
+
+  it('keeps featured stories out of the secondary picks panel', async () => {
+    renderApp();
+    const slides = await screen.findAllByTestId('hero-slide');
+    const featured = slides.map((s) => within(s).getByRole('link', { name: /Story details/, hidden: true }).getAttribute('href'));
+    const panel = document.getElementById('top-signals')!;
+    const links = [...panel.querySelectorAll('a[href^="#/frontier/story/"]')].map((a) => a.getAttribute('href'));
+    expect(links.some((link) => featured.includes(link))).toBe(false);
+    expect(screen.queryByTestId('signal-wall')).not.toBeInTheDocument();
+  });
+});
