@@ -5,7 +5,7 @@ import { SectionHeading } from "../components/SectionHeading";
 import { Icon } from "../components/Icon";
 import { BrandGlyph } from "../../components/BrandGlyph";
 function ExpertiseDiagram({ mode }: { mode: number }) {
-  return <BrandGlyph mode={mode} />;
+  return <BrandGlyph mode={mode} className="expertise-diagram" />;
 }
 export function Expertise() {
   const { t, language } = usePreferences();
