@@ -4,14 +4,13 @@ import { formatNumber, relativeTime } from '../lib/dates';
 import { useI18n } from '../lib/i18n';
 import { iconArt, type IconArtId } from '../lib/iconArt';
 import type { IntroStats } from '../lib/introStats';
-import { useMotionMode } from '../lib/motion';
 import { href } from '../lib/router';
 import type { PickEntry } from '../lib/types';
 import { HalftoneWordmark } from './HalftoneWordmark';
 import { Icon } from './Icon';
 
 /**
- * First scene of the homepage: a cinematic film, the site identity and the four ways into the coverage. The page's h1 lives here.
+ * Editorial introduction: the site identity and four ways into the coverage. The page's h1 lives here.
  */
 
 interface Entry {
@@ -36,40 +35,24 @@ export interface IntroData {
 export function HomeIntro({ onContinue, data }: { onContinue: () => void; data: IntroData | null }) {
   const { t, locale } = useI18n();
   const stats = data?.stats;
-  const motionMode = useMotionMode();
   const root = useRef<HTMLElement>(null);
-  const video = useRef<HTMLVideoElement>(null);
 
-  // Decode and play the film only while the scene is on screen.
+  // Pause decorative effects while the scene is off screen.
   useEffect(() => {
     const el = root.current;
-    const film = video.current;
     if (!el || typeof IntersectionObserver === 'undefined') {
       el?.setAttribute('data-live', 'true');
       return;
     }
-    const motion = window.matchMedia('(prefers-reduced-motion: reduce)');
-    let startTimer = 0;
     const sync = (live: boolean) => {
       el.setAttribute('data-live', String(live));
-      if (!film) return;
-      window.clearTimeout(startTimer);
-      if (live && !motion.matches && motionMode === 'full') {
-        // Keep media fetch/decode out of the critical first paint. The poster makes the hero complete
-        // immediately; the compact loop starts once React and the initial feed have settled.
-        startTimer = window.setTimeout(() => void film.play().catch(() => undefined), 650);
-      } else film.pause();
     };
     const io = new IntersectionObserver(([e]) => sync(Boolean(e?.isIntersecting)), { threshold: 0 });
     io.observe(el);
-    const onMotion = () => sync(el.getAttribute('data-live') !== 'false');
-    motion.addEventListener('change', onMotion);
     return () => {
       io.disconnect();
-      window.clearTimeout(startTimer);
-      motion.removeEventListener('change', onMotion);
     };
-  }, [motionMode]);
+  }, []);
 
   const entries: Entry[] = [
     {
@@ -117,18 +100,6 @@ export function HomeIntro({ onContinue, data }: { onContinue: () => void; data: 
 
         <div className="hi-bento">
           <div className="hi-primary-card">
-            <video
-              ref={video}
-              className="hi-hero-video"
-              muted
-              loop
-              playsInline
-              preload="none"
-              poster={`${import.meta.env.BASE_URL}media/frontier-hero-poster.webp`}
-              aria-hidden="true"
-            >
-              <source src={`${import.meta.env.BASE_URL}media/frontier-hero.mp4`} type="video/mp4" />
-            </video>
             <span className="hi-hero-scrim" aria-hidden="true" />
             <span className="hi-card-rim" aria-hidden="true" />
             <p className="hi-kicker">[ {t('intro_kicker')} ]</p>
