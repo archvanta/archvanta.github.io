@@ -9,6 +9,7 @@ import { toneFor, type Tone } from '../lib/tones';
 import { CATEGORY_IDS, type Locale } from '../lib/types';
 import { UserMenu } from './account/UserMenu';
 import { Icon } from './Icon';
+import { BrandGlyph } from './BrandGlyph';
 
 function isActive(route: Route, key: string): boolean {
   switch (key) {
@@ -112,6 +113,7 @@ function GitHubMark({ size = 18 }: { size?: number }) {
 
 
 interface MenuItem {
+  glyphMode?: number;
   key: string;
   to: string;
   art: IconArtId;
@@ -199,7 +201,7 @@ export function NavGroup({ group, open, onToggle, onClose, triggerClassName = ""
             <li key={it.key}>
               <a className="nav-row" href={it.href ?? href(it.to, it.params)} aria-current={it.current ? 'page' : undefined}>
                 <span className="nav-tile" data-tone={it.tone} aria-hidden="true">
-                  <img className="nav-tile-art" src={iconArt(it.art)} alt="" width={48} height={48} decoding="async" />
+                  {it.glyphMode === undefined ? <img className="nav-tile-art" src={iconArt(it.art)} alt="" width={48} height={48} decoding="async" /> : <BrandGlyph mode={it.glyphMode} />}
                 </span>
                 <span className="nav-row-text">
                   <span className="nav-row-title">{it.title}</span>

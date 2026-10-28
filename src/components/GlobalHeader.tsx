@@ -73,6 +73,7 @@ export function GlobalHeader({ route }: { route: AppRoute }) {
       label: m.expertise,
       current: route.kind === "brand" && route.page === "expertise",
       items: expertise.map((e) => ({
+        glyphMode: e.mode,
         key: e.id,
         to: "/",
         href: brandHref(`/expertise/${e.id}`),
@@ -96,6 +97,7 @@ export function GlobalHeader({ route }: { route: AppRoute }) {
       current:
         route.kind === "brand" && ["projects", "project"].includes(route.page),
       items: categories.map((c) => ({
+        glyphMode: c.id === "data-centers" ? 3 : c.id === "bim" ? 2 : c.id === "urban" ? 1 : 0,
         key: c.id,
         to: "/",
         href: brandHref("/projects", {
