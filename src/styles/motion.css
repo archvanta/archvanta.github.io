@@ -10,7 +10,8 @@
    The router commits a change of page inside document.startViewTransition (lib/router.ts). The header has its own
    snapshot and stays put; the rest of the screen (the root snapshot, i.e. exactly what was in view) fades and lifts away
    quickly, then the new page rises in. Language and theme changes cross-fade. */
-.site-header {
+.site-header,
+.av-header {
   view-transition-name: site-header;
 }
 
@@ -29,8 +30,11 @@ html[data-vt='page']::view-transition-new(root) {
 
 html[data-vt='page']::view-transition-old(site-header),
 html[data-vt='page']::view-transition-new(site-header) {
-  animation-duration: var(--dur-tab);
+  animation: none;
 }
+
+html[data-vt='page']::view-transition-group(site-header) { animation: none; }
+html[data-vt='page']::view-transition-old(site-header) { opacity: 0; }
 
 /* Language: a short cross-fade so Persian and English never sit on top of each other for long. */
 html[data-vt='lang']::view-transition-old(*) {

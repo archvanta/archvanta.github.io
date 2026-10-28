@@ -26,3 +26,4 @@ createRoot(document.getElementById('root')!).render(
 );
 import './styles/unified.css';
 import './styles/studio.css';
+import './styles/generated-experience.css';

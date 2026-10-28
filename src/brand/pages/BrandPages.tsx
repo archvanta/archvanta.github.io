@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, type CSSProperties } from "react";
 import { useI18n } from "../../lib/i18n";
 import { useData } from "../../lib/dataContext";
 import { useAsync } from "../../lib/hooks";
@@ -20,9 +20,10 @@ import {
   expertise,
   type ProjectRecord,
 } from "../../content/catalog";
-import { CircularTestimonials } from "../../components/ui/circular-testimonials";
+import { ProjectHeadlines } from "../../components/ui/project-headlines";
 import { ParallaxComponent } from "../../components/ui/parallax-scrolling";
 import { CreatorSignature, LabSchematic } from "../../components/StudioDetails";
+import { DigitalProjects } from "../../components/DigitalProjects";
 import { StoryCard } from "../../components/StoryCard";
 import { Icon } from "../../components/Icon";
 import { EmptyState, ErrorState, Loading } from "../../components/States";
@@ -106,41 +107,15 @@ function SelectedWork() {
           <Icon name="arrow" directional />
         </a>
       </div>
-      <CircularTestimonials
-        ariaLabel={m.selected}
-        autoplay={false}
-        testimonials={projectCatalog(locale)
+      <ProjectHeadlines
+        projects={projectCatalog(locale)
           .filter((p) =>
             [
               "modular-data-centre",
               "the-last-shadow-of-time",
               "technical-level-48-racks",
             ].includes(p.slug),
-          )
-          .map((p) => ({
-            name: p.title,
-            quote: p.summary,
-            designation: p.category + " / " + p.status,
-            src: p.cover,
-          }))}
-        labels={{
-          previous: locale === "fa" ? "پروژهٔ قبلی" : "Previous project",
-          next: locale === "fa" ? "پروژهٔ بعدی" : "Next project",
-          pause: locale === "fa" ? "توقف" : "Pause",
-          play: locale === "fa" ? "پخش" : "Play",
-        }}
-        renderAction={(item) => (
-          <a
-            className="text-link"
-            href={brandHref(
-              "/projects/" +
-                projectCatalog(locale).find((p) => p.cover === item.src)!.slug,
-            )}
-          >
-            {locale === "fa" ? "بررسی پروژه" : "Explore project"}
-            <Icon name="arrow" directional />
-          </a>
-        )}
+          )}
       />
     </section>
   );
@@ -162,6 +137,7 @@ function Creator({ full = false }: { full?: boolean }) {
           {full ? m.email : m.portfolio}
           <Icon name="arrow" directional />
         </a>
+        <a className="text-link studio-resume-link" href="/documents/MohammadAmin_Sadeghi_Resume.pdf" download="MohammadAmin_Sadeghi_Resume.pdf"><Icon name="book" />{locale === 'fa' ? 'دانلود رزومه — PDF' : 'Download résumé — PDF'}</a>
       </div>
       <div className="av-creator-note">
         <CreatorSignature />
@@ -536,10 +512,14 @@ function ProjectDetail({ slug }: { slug?: string }) {
                     </div>
                   ),
               )}
+            {!!p.source?.deliver?.length && <div className="project-deliverables"><h3>{locale === 'fa' ? 'خروجی‌های پروژه' : 'Project deliverables'}</h3><ul>{p.source.deliver.map(item => <li key={item}>{tr(item, locale)}</li>)}</ul></div>}
           </div>
           <dl>
             <dt>{m.status}</dt>
             <dd>{p.status}</dd>
+            {p.source?.year && <><dt>{locale === 'fa' ? 'سال' : 'Year'}</dt><dd>{p.source.year}</dd></>}
+            {p.source?.type && <><dt>{locale === 'fa' ? 'نوع پروژه' : 'Project type'}</dt><dd>{tr(p.source.type, locale)}</dd></>}
+            {p.source?.timeline && <><dt>{locale === 'fa' ? 'بازهٔ زمانی' : 'Timeline'}</dt><dd>{tr(p.source.timeline, locale)}</dd></>}
             {p.source?.role && (
               <>
                 <dt>{m.role}</dt>
@@ -578,6 +558,7 @@ function ProjectDetail({ slug }: { slug?: string }) {
         {gallery.length > 0 && (
           <>
             <h2>{m.gallery}</h2>
+            {p.source?.boards?.title && <p className="project-boards-title">{tr(p.source.boards.title, locale)}</p>}
             <div className="av-gallery">
               {gallery.map((image, i) => (
                 <figure key={`${image.src}:${i}`}>
@@ -604,7 +585,7 @@ function ProjectDetail({ slug }: { slug?: string }) {
           </>
         )}
         {proposal && (
-          <details className="av-proposal">
+          <details className="av-proposal" open style={{ '--proposal-ratio': proposal.ratio } as CSSProperties}>
             <summary>
               {tr(proposal.label || "Design proposal", locale)} ·{" "}
               {proposal.pages} {locale === "fa" ? "صفحه" : "pages"}
@@ -745,13 +726,14 @@ export default function BrandPages({ route }: { route: BrandRoute }) {
       {route.page === "home" ? (
         <>
           <ParallaxComponent />
-          <SelectedWork />
           <Expertise />
           <Systems />
           <LabOverview short />
+          <DigitalProjects />
           <Creator />
           <NewsPreview />
           <Process />
+          <SelectedWork />
           <Contact />
         </>
       ) : route.page === "projects" ? (
@@ -764,6 +746,7 @@ export default function BrandPages({ route }: { route: BrandRoute }) {
         <>
           <PageTitle label="ARCHVANTA / DIGITAL LAB" title={m.lab} />
           <LabOverview />
+          <DigitalProjects />
         </>
       ) : route.page === "model" ? (
         <ModelView slug={route.slug} />
@@ -785,6 +768,7 @@ export default function BrandPages({ route }: { route: BrandRoute }) {
           {route.page === "about" && <About />}
           <Creator full />
           <Experience />
+          <DigitalProjects />
           <SelectedWork />
           <Process />
         </>
