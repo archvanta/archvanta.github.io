@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef } from 'react';
+import { useLayoutEffect, useRef } from 'react';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import Lenis from '@studio-freight/lenis';
@@ -10,6 +10,7 @@ import { brandHref } from '../../lib/unifiedRouter';
 import { BrandMark } from '../../brand/components/Brand';
 import { DisciplineIndex } from '../StudioDetails';
 import { Icon } from '../Icon';
+import { StatueLayers } from './statue-layers';
 import './parallax-scrolling.css';
 
 /** Adapted from the user-supplied Osmo / 21st.dev layered parallax scene. */
@@ -19,7 +20,7 @@ export function ParallaxComponent({ title = 'ARCHVANTA' }: { title?: string }) {
   const mode = useMotionMode();
   const { locale } = useI18n();
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     const root = parallaxRef.current;
     if (!root || mode !== 'full') return;
     gsap.registerPlugin(ScrollTrigger);
@@ -76,50 +77,38 @@ export function ParallaxComponent({ title = 'ARCHVANTA' }: { title?: string }) {
 
   const skip = () => {
     const root = parallaxRef.current;
-    const target = (root?.parentElement?.querySelector('.circular-testimonials')?.closest('section') ?? root?.nextElementSibling) as HTMLElement | null;
+    const target = (root?.parentElement?.querySelector('#selected-work') ?? root?.nextElementSibling) as HTMLElement | null;
     if (!target) return;
     if (lenisRef.current) lenisRef.current.scrollTo(target, { offset: -80 });
     else target.scrollIntoView({ block: 'start' });
   };
 
   return (
-    <div className="parallax" ref={parallaxRef} data-motion={mode}>
+    <div className="parallax parallax--statues" ref={parallaxRef} data-motion={mode}>
       <section className="parallax__header" aria-labelledby="home-title">
         <div className="parallax__visuals">
           <div className="parallax__black-line-overflow" aria-hidden="true" />
           <div data-parallax-layers className="parallax__layers">
-            <img src="/images/parallax/background.webp" loading="eager" fetchPriority="high" width="2000" height="1906" data-parallax-layer="1" alt="" className="parallax__layer-img" />
-            <img src="/images/parallax/middle.webp" loading="eager" width="2000" height="1906" data-parallax-layer="2" alt="" className="parallax__layer-img" />
-            <div data-parallax-layer="3" className="parallax__layer-title">
-              <h1 id="home-title" className="parallax__title" lang="en" dir="ltr">{title}</h1>
-            </div>
-            <img src="/images/parallax/foreground.webp" loading="eager" width="2000" height="1906" data-parallax-layer="4" alt="" className="parallax__layer-img" />
+            <StatueLayers title={title} />
           </div>
           <div className="parallax__fade" aria-hidden="true" />
           <div className="parallax__top">
             <span lang="en">ARCHITECTURE / INFRASTRUCTURE / DIGITAL INTELLIGENCE</span>
             <button type="button" onClick={skip}>{locale === 'fa' ? 'رفتن به پروژه‌ها' : 'Skip to projects'} <span aria-hidden="true">↓</span></button>
           </div>
-          <div className="studio-hero-bottom">
-            <div>
-              <p className="studio-hero-label">{locale === 'fa' ? 'یک نگاه مستقل به طراحی' : 'AN INDEPENDENT DESIGN PERSPECTIVE'}</p>
-              <p className="studio-hero-description">{locale === 'fa' ? 'از فضا تا سیستم؛ معماری، زیرساخت و تجربه‌های دیجیتال در یک مسیر.' : 'From space to systems. Architecture, infrastructure and digital experiences, connected.'}</p>
-            </div>
-            <div className="studio-hero-actions">
-              <a className="studio-pill" href={brandHref('/projects')}>{locale === 'fa' ? 'کشف پروژه‌ها' : 'Explore projects'}<Icon name="arrow" directional size={18} /></a>
-              <a className="studio-hero-lab" href={brandHref('/lab')}>{locale === 'fa' ? 'ورود به آزمایشگاه' : 'Enter the Lab'}<Icon name="arrow" directional size={16} /></a>
-            </div>
-          </div>
-          <p className="parallax__scroll">{locale === 'fa' ? 'برای کشف بیشتر اسکرول کن' : 'SCROLL TO EXPLORE'} <span aria-hidden="true">↓</span></p>
         </div>
       </section>
       <section className="parallax__content" aria-label={locale === 'fa' ? 'نگاه آرک‌ونتا' : 'The ARCHVANTA perspective'}>
         <div className="studio-manifesto">
-          <div className="studio-manifesto-label"><BrandMark /><span>ARCHVANTA / 01</span></div>
-          <h2>{locale === 'fa' ? <>طراحی فضا.<br /><span>مهندسی آینده.</span></> : <>Designing Space.<br /><span>Engineering the Future.</span></>}</h2>
-          <div className="studio-manifesto-body">
+          <div className="studio-manifesto-label" data-reveal><BrandMark /><span>ARCHVANTA / 01</span></div>
+          <h2 data-reveal>{locale === 'fa' ? <>طراحی فضا.<br /><span>مهندسی آینده.</span></> : <>Designing Space.<br /><span>Engineering the Future.</span></>}</h2>
+          <div className="studio-manifesto-body" data-reveal>
             <p>{locale === 'fa' ? 'معماری فقط ساختن یک حجم نیست؛ هماهنگی فضا، تجهیزات و اطلاعات است. آرک‌ونتا این ارتباط را از ایده و مدل تا مستندات و ابزارهای تعاملی دنبال می‌کند.' : 'Architecture extends beyond a building. It connects space, equipment and information. ARCHVANTA explores that connection through design studies, coordinated models and interactive tools.'}</p>
             <a href={brandHref('/portfolio')}>{locale === 'fa' ? 'دیدگاه و کارهای محمدامین صادقی' : 'The work & perspective of MohammadAmin Sadeghi'}<Icon name="arrow" directional size={16} /></a>
+            <div className="studio-hero-actions">
+              <a className="studio-pill" href={brandHref('/projects')}>{locale === 'fa' ? 'کشف پروژه‌ها' : 'Explore projects'}<Icon name="arrow" directional size={18} /></a>
+              <a className="studio-hero-lab" href={brandHref('/lab')}>{locale === 'fa' ? 'ورود به آزمایشگاه' : 'Enter the Lab'}<Icon name="arrow" directional size={16} /></a>
+            </div>
           </div>
         </div>
         <DisciplineIndex />
