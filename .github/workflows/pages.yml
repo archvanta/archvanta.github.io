@@ -21,7 +21,12 @@ jobs:
           cache: npm
       - run: npm ci
       - run: npm run lint
+      - run: npm test
       - run: npm run build
+        env:
+          VITE_ACCOUNTS_ENABLED: "false"
+      - run: node scripts/check-bundle-keys.mjs dist
+      - run: npm run build:mock
       - run: npx playwright install --with-deps chromium
       - run: npm run test:e2e
       - uses: actions/configure-pages@v5
