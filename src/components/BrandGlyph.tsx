@@ -1,11 +1,11 @@
-/** A flat, monochrome family: portal, coordinated layers, racks and digital tools. */
+import { CodeIcon, CubeIcon, LayersIcon, ReaderIcon } from '@radix-ui/react-icons';
+
+/** The same outline family is used in cards, menus, the introduction and Lab. */
+export const disciplineIcons = [CubeIcon, CodeIcon, LayersIcon, ReaderIcon] as const;
+
 export function BrandGlyph({ mode, className = '' }: { mode: number; className?: string }) {
-  return <svg className={`brand-glyph ${className}`} viewBox="0 0 48 48" width="48" height="48" fill="currentColor" aria-hidden="true" focusable="false">
-    {mode === 0 ? <path d="M9 7h30v34H29V17H19v24H9V7Z" />
-      : mode === 2 ? <><path opacity=".4" d="M7 7h26v26H7V7Zm7 7v12h12V14H14Z" fillRule="evenodd" /><path d="M15 15h26v26H15V15Zm7 7v12h12V22H22Z" fillRule="evenodd" /></>
-      : mode === 3 ? <path d="M7 8h15v32H7V8Zm4 7v3h7v-3h-7Zm0 8v3h7v-3h-7Zm15-15h15v32H26V8Zm4 7v3h7v-3h-7Zm0 8v3h7v-3h-7Z" fillRule="evenodd" />
-      : <><path d="M7 7h12v5h-7v7H7V7Zm22 0h12v12h-5v-7h-7V7ZM7 29h5v7h7v5H7V29Zm29 0h5v12H29v-5h7v-7Z" opacity=".5" /><path d="m24 15 9 9-9 9-9-9 9-9Z" /></>}
-  </svg>;
+  const Glyph = disciplineIcons[mode] ?? CodeIcon;
+  return <Glyph className={`brand-glyph ${className}`} width="48" height="48" aria-hidden="true" focusable="false" />;
 }
 
 export function PerspectiveMark() {
