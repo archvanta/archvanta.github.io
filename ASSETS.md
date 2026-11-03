@@ -32,3 +32,7 @@ The owner-supplied résumé is published unchanged; its checksum and the static 
 ## Minimal discipline revision
 
 The active discipline symbols are original flat monochrome SVG paths in `src/components/BrandGlyph.tsx`. They replace the generated metallic category images in the introduction, navigation, expertise and Lab. The systems section again uses the original procedural `ArchitecturalModel` with four selectable modes. The generated category and system images remain historical files, without runtime references from these sections. The independently approved logo and creator artwork are separate from the discipline icon family.
+
+## Bento expertise cards
+
+The Bento Grid and shadcn Button implementation are adapted from the owner-supplied component text. Expertise icons come from `@radix-ui/react-icons` (MIT, https://github.com/radix-ui/icons). The faint geometric SVG backgrounds are original decorative drawings in `src/brand/sections/Expertise.tsx`; no remote or placeholder demo images are used.

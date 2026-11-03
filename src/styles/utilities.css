@@ -4,3 +4,18 @@
 @import "tailwindcss/theme.css" layer(theme);
 @import "tailwindcss/utilities.css" layer(utilities);
 @source '../';
+@custom-variant dark (&:where([data-theme='dark'], [data-theme='dark'] *));
+@theme inline {
+  --color-background: var(--bg);
+  --color-foreground: var(--text);
+  --color-primary: var(--text);
+  --color-primary-foreground: var(--bg);
+  --color-secondary: var(--surface-2);
+  --color-secondary-foreground: var(--text);
+  --color-accent: var(--surface-3);
+  --color-accent-foreground: var(--text);
+  --color-destructive: #d93849;
+  --color-destructive-foreground: #fff;
+  --color-input: var(--line-strong);
+  --color-ring: var(--accent);
+}
