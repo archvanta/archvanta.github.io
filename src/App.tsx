@@ -22,6 +22,7 @@ import { useHash, routePath } from "./lib/router";
 import { appRoute } from "./lib/unifiedRouter";
 import { focusSection } from "./lib/focus";
 import { projectCatalog } from "./content/catalog";
+import { restoreScroll, useSmoothScroll } from "./lib/smoothScroll";
 const BrandPages = lazy(() => import("./brand/pages/BrandPages"));
 const EditorialPage = lazy(() =>
   import("./EditorialPage").then((m) => ({ default: m.EditorialPage })),
@@ -46,11 +47,9 @@ export function App({
   const meta = useAsync(() => data.meta(), [data]);
   const positions = useRef(new Map<string, number>());
   const path = routePath(hash);
+  useSmoothScroll();
   useLayoutEffect(() => {
-    window.scrollTo({
-      top: positions.current.get(path) || 0,
-      behavior: "instant",
-    });
+    restoreScroll(positions.current.get(path) || 0);
     const record = () => positions.current.set(path, window.scrollY);
     window.addEventListener("scroll", record, { passive: true });
     return () => window.removeEventListener("scroll", record);

@@ -314,7 +314,7 @@ test("opening is a permanent scroll chapter, skips to projects and stays off dee
   await expect(page.locator(".parallax")).toHaveCount(0);
 });
 
-test("parallax layers reverse on upward scroll and release smooth scrolling on route changes", async ({ page }) => {
+test("parallax reverses while shared smooth scrolling survives route changes", async ({ page }) => {
   const computerMedia: string[] = [];
   page.on("request", request => {
     if (/frontier-hero\.(mp4|webp)|frontier-hero-poster/.test(request.url())) computerMedia.push(request.url());
@@ -338,12 +338,44 @@ test("parallax layers reverse on upward scroll and release smooth scrolling on r
   await expect(opening.locator("video")).toHaveCount(0);
   expect(await page.evaluate(() => document.documentElement.scrollWidth - innerWidth)).toBeLessThanOrEqual(1);
   await page.goto('/#/projects');
-  await expect(page.locator('html')).not.toHaveClass(/lenis/);
+  await expect(page.locator('html')).toHaveClass(/lenis/);
   await page.goto('/');
   await expect(page.locator('html')).toHaveClass(/lenis/);
   await page.emulateMedia({ reducedMotion: 'reduce' });
   await expect(page.locator('html')).not.toHaveClass(/lenis/);
   await expect(opening).toHaveAttribute('data-motion', 'reduced');
+});
+
+test('FRONTIER shares smooth wheel scrolling, resets route momentum and pauses for dialogs', async ({ page }) => {
+  await page.emulateMedia({ reducedMotion: 'no-preference' });
+  await page.goto('/#/frontier/');
+  await expect(page.locator('html')).toHaveClass(/lenis-smooth/);
+  await expect(page.locator('.story-card[data-tone]').first()).toHaveCSS('border-top-width', '0px');
+  await page.mouse.move(600, 500);
+  await page.mouse.wheel(0, 900);
+  // Feed content loads progressively, so the first wheel can be clamped by its initial height.
+  await expect.poll(() => page.evaluate(() => window.scrollY)).toBeGreaterThan(100);
+  await expect.poll(() => page.evaluate(() => window.scrollY)).toBeLessThanOrEqual(900);
+  await page.mouse.wheel(0, 900);
+  await page.locator('.av-global-nav').getByRole('link', { name: 'Digital Lab', exact: true }).click();
+  await expect(page).toHaveURL(/#\/lab$/);
+  await expect(page.locator('html')).toHaveClass(/lenis-smooth/);
+  await expect.poll(() => page.evaluate(() => window.scrollY)).toBe(0);
+  const samples = await page.evaluate(() => new Promise<number[]>(resolve => {
+    const positions: number[] = [];
+    const sample = () => { positions.push(window.scrollY); if (positions.length < 20) requestAnimationFrame(sample); else resolve(positions); };
+    requestAnimationFrame(sample);
+  }));
+  expect(Math.max(...samples)).toBe(0);
+  await page.goto('/#/projects/modular-data-centre');
+  await expect(page.locator('html')).toHaveClass(/lenis-smooth/);
+  await page.locator('.av-gallery button').first().click();
+  await expect(page.locator('.av-lightbox')).toBeVisible();
+  await expect(page.locator('html')).toHaveClass(/lenis-stopped/);
+  await page.keyboard.press('Escape');
+  await expect(page.locator('html')).not.toHaveClass(/lenis-stopped/);
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  await expect(page.locator('html')).not.toHaveClass(/lenis/);
 });
 
 test("shared English and Persian fonts are loaded and used by form controls", async ({ page }) => {

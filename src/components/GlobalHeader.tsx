@@ -267,6 +267,7 @@ export function GlobalHeader({ route }: { route: AppRoute }) {
       <dialog
         ref={dialog}
         className="av-mobile-menu"
+        data-lenis-prevent
         aria-label={t("nav_menu")}
         onCancel={() => setMobile(false)}
         onClose={() => {

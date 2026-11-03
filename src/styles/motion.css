@@ -1,3 +1,10 @@
+/* Shared smooth scrolling also applies to direct FRONTIER and internal-page loads. */
+html.lenis { height: auto; }
+.lenis.lenis-smooth { scroll-behavior: auto; }
+.lenis.lenis-smooth [data-lenis-prevent] { overscroll-behavior: contain; }
+.lenis.lenis-stopped { overflow: hidden; }
+.lenis.lenis-scrolling iframe { pointer-events: none; }
+
 /* ---------- Motion system ----------
    Every transition and entrance on the site, in one place. Durations and curves come from tokens.css (`--ease-out`,
    `--dur-press` … `--dur-reveal`); lib/motion.ts holds the same numbers and drives the parts that need script
