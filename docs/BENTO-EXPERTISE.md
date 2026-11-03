@@ -1,0 +1,9 @@
+# Expertise Bento integration
+
+Integrated the owner's supplied Bento Grid component into the four home expertise fields. `src/components/ui/bento-grid.tsx` provides the reusable grid/card; `button.tsx` is the supplied shadcn Button using Radix Slot and CVA. TypeScript, Tailwind 4, the `@/` alias and shadcn structure already existed. `components.json` maps `@/components/ui` to `src/components/ui`; imported UI stays in that shared directory. Component styles are in `bento-grid.css`; `src/styles/utilities.css` maps shadcn color utilities and the dark variant to the existing application tokens.
+
+The three-column desktop composition has a wide architecture card, a tall BIM card, and infrastructure/digital cards beneath architecture. Tablet uses two columns and mobile one. Content comes from the existing bilingual expertise records, with links to actual expertise pages and Digital Lab. There are no placeholder features or images from the demo.
+
+Radix Cube, Layers, Reader and Code icons provide the supplied sample's simple outline style. Background SVG geometry is original decorative artwork. Descriptions remain visible. Hover/focus reveals the action with short transform/opacity transitions. Touch and reduced-motion users receive visible actions without requiring hover.
+
+Validation on 2026-11-03: TypeScript, ESLint, production/mock builds and all 48 existing browser checks passed. A further production-preview matrix covered English/Persian, light/dark, 390/768/1440px and keyboard focus for all four cards; no clipped card content or hidden focused action was found. Screenshots are in `docs/previews/bento` (the sticky header is hidden for section-only captures). Media integrity and bundle secret scans passed. GitHub CI also runs the full unit and browser suites before publication.

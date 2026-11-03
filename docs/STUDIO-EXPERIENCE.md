@@ -13,3 +13,5 @@ The permanent home introduction restores the owner's red statue composition. Fou
 Shared FRONTIER fonts and tokens remain authoritative: Inter for English and Vazirmatn for Persian, with both themes supported. Generated image motion is interaction-driven rather than continuous. Model WebGL still loads only on request. No universal frame-rate guarantee is made.
 
 Implementation: `src/styles/generated-experience.css`, `src/components/ui/statue-layers.tsx`, `src/components/ui/project-headlines.tsx`, and the existing shared components. Current icon and model screenshots are in `docs/previews/minimal`; the broader refresh is recorded in `docs/previews/refresh`.
+
+The home expertise section now uses the supplied Bento composition with Radix outline icons and actual discipline links. See `docs/BENTO-EXPERTISE.md` and `docs/previews/bento` for the current card implementation and validation. Shared navigation/index symbols remain separate from the expertise card illustrations.
