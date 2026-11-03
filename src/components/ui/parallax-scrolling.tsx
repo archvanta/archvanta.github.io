@@ -3,8 +3,8 @@
 import { useLayoutEffect, useRef } from 'react';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
-import Lenis from '@studio-freight/lenis';
 import { useMotionMode } from '../../lib/motion';
+import { smoothScrollTo } from '../../lib/smoothScroll';
 import { useI18n } from '../../lib/i18n';
 import { brandHref } from '../../lib/unifiedRouter';
 import { BrandMark } from '../../brand/components/Brand';
@@ -16,7 +16,6 @@ import './parallax-scrolling.css';
 /** Adapted from the user-supplied Osmo / 21st.dev layered parallax scene. */
 export function ParallaxComponent({ title = 'ARCHVANTA' }: { title?: string }) {
   const parallaxRef = useRef<HTMLDivElement>(null);
-  const lenisRef = useRef<Lenis | null>(null);
   const mode = useMotionMode();
   const { locale } = useI18n();
 
@@ -45,19 +44,6 @@ export function ParallaxComponent({ title = 'ARCHVANTA' }: { title?: string }) {
       });
     }, root);
 
-    const lenis = new Lenis({ smoothWheel: true, syncTouch: false });
-    lenisRef.current = lenis;
-    const update = () => ScrollTrigger.update();
-    const tick = (time: number) => lenis.raf(time * 1000);
-    lenis.on('scroll', update);
-    gsap.ticker.add(tick);
-    const syncModal = () => {
-      if (document.body.style.overflow === 'hidden') lenis.stop();
-      else lenis.start();
-    };
-    const bodyObserver = new MutationObserver(syncModal);
-    bodyObserver.observe(document.body, { attributes: true, attributeFilter: ['style'] });
-    syncModal();
     const refresh = () => ScrollTrigger.refresh();
     const images = Array.from(root.querySelectorAll('img'));
     images.forEach(image => image.addEventListener('load', refresh));
@@ -66,11 +52,6 @@ export function ParallaxComponent({ title = 'ARCHVANTA' }: { title?: string }) {
     return () => {
       alive = false;
       images.forEach(image => image.removeEventListener('load', refresh));
-      gsap.ticker.remove(tick);
-      bodyObserver.disconnect();
-      lenis.off('scroll', update);
-      lenis.destroy();
-      lenisRef.current = null;
       context.revert();
     };
   }, [mode]);
@@ -79,8 +60,7 @@ export function ParallaxComponent({ title = 'ARCHVANTA' }: { title?: string }) {
     const root = parallaxRef.current;
     const target = (root?.parentElement?.querySelector('#selected-work') ?? root?.nextElementSibling) as HTMLElement | null;
     if (!target) return;
-    if (lenisRef.current) lenisRef.current.scrollTo(target, { offset: -80 });
-    else target.scrollIntoView({ block: 'start' });
+    smoothScrollTo(target, { offset: -80 });
   };
 
   return (

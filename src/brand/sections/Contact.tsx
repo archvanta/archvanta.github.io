@@ -2,10 +2,9 @@ import { BrandMark } from "../components/Brand";
 import { Icon } from "../components/Icon";
 import { site } from "../lib/content";
 import { usePreferences } from "../lib/preferences";
-import { useMotionMode } from "../../lib/motion";
+import { smoothScrollTo } from "../../lib/smoothScroll";
 export function Contact() {
   const { t } = usePreferences();
-  const motion = useMotionMode();
   return (
     <>
       <section
@@ -47,7 +46,7 @@ export function Contact() {
               FRONTIER
               <Icon name="external" size={14} />
             </a>
-            <button type="button" className="back-top" onClick={() => window.scrollTo({ top: 0, behavior: motion === 'full' ? 'smooth' : 'auto' })}>
+            <button type="button" className="back-top" onClick={() => smoothScrollTo(0)}>
               {t.backTop}
               <Icon name="down" size={14} />
             </button>

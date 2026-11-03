@@ -632,6 +632,7 @@ function ProjectDetail({ slug }: { slug?: string }) {
       <dialog
         ref={dialog}
         className="av-lightbox"
+        data-lenis-prevent
         aria-label={m.gallery}
         onCancel={() => setActive(null)}
         onClose={() => setActive(null)}
