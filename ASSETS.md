@@ -36,3 +36,5 @@ The active discipline symbols are original flat monochrome SVG paths in `src/com
 ## Bento expertise cards
 
 The Bento Grid and shadcn Button implementation are adapted from the owner-supplied component text. Expertise icons come from `@radix-ui/react-icons` (MIT, https://github.com/radix-ui/icons). The faint geometric SVG backgrounds are original decorative drawings in `src/brand/sections/Expertise.tsx`; no remote or placeholder demo images are used.
+
+The shared discipline icon family now uses Radix Cube, Layers, Reader and Code throughout the introductory index, menus, Lab and Bento cards. `src/components/BrandGlyph.tsx` centralizes their mapping; the earlier filled custom paths are no longer rendered.

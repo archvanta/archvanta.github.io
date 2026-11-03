@@ -385,7 +385,7 @@ test('minimal discipline symbols and restored system layers work; header stays o
   // The development-only fixture banner is absent from the published shell.
   await page.evaluate(() => document.querySelector('.mock-banner')?.remove());
   await expect(page.locator('.statue-composition')).toHaveAttribute('data-ready','true');
-  await expect(page.locator('.brand-glyph').first()).toHaveAttribute('viewBox','0 0 48 48');
+  await expect(page.locator('.brand-glyph').first()).toHaveAttribute('viewBox','0 0 15 15');
   await expect(page.locator('.brand-glyph img, .generated-system-stage')).toHaveCount(0);
   await expect(page.locator('.av-header')).toHaveCSS('view-transition-name','site-header');
   const group = page.getByRole('group', { name: 'Design layers' });

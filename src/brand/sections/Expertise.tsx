@@ -1,11 +1,10 @@
-import { CodeIcon, CubeIcon, LayersIcon, ReaderIcon } from '@radix-ui/react-icons';
 import { expertise } from '../lib/content';
 import { usePreferences } from '../lib/preferences';
 import { SectionHeading } from '../components/SectionHeading';
 import { BentoCard, BentoGrid } from '@/components/ui/bento-grid';
 import { brandHref } from '@/lib/unifiedRouter';
+import { disciplineIcons } from '@/components/BrandGlyph';
 
-const icons = [CubeIcon, LayersIcon, ReaderIcon, CodeIcon];
 const paths = ['/expertise/architecture', '/expertise/bim', '/expertise/infrastructure', '/lab'];
 const actions = {
   en: ['Explore architecture', 'Explore BIM', 'Explore infrastructure', 'Enter the Lab'],
@@ -41,7 +40,7 @@ export function Expertise() {
           className={`expertise-bento-card expertise-bento-card--${entry.id}`}
           name={entry.title[language]}
           description={entry.body[language]}
-          Icon={icons[index]!}
+          Icon={disciplineIcons[entry.mode] ?? disciplineIcons[1]}
           background={<DisciplineBackdrop index={index} />}
           eyebrow={`0${index + 1} / ARCHVANTA`}
           tags={entry.tags}
