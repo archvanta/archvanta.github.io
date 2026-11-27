@@ -46,7 +46,6 @@ export const copy = {
     caption: { en: 'The Last Shadow of Time — aerial view', fa: 'آخرین سایهٔ زمان — نمای هوایی' },
     ctaAbout: { en: 'About me', fa: 'درباره من' },
     ctaExplore: { en: 'What is on this site', fa: 'این سایت چه دارد' },
-    drawing: { en: 'A-000 · Folded-plate study, drawn for this site', fa: 'A-000 · مطالعهٔ سقف چین‌دار، ترسیم‌شده برای همین سایت' },
   },
   home: {
     aboutLabel: { en: '01 — Who I am', fa: '۰۱ — من کی هستم' },
@@ -70,15 +69,6 @@ export const copy = {
       { key: 'frontier', href: '#/frontier/', title: { en: 'FRONTIER', fa: 'FRONTIER' }, body: { en: 'My bilingual technology-news site, updated several times a day.', fa: 'سایت خبر فناوری دوزبانهٔ من که چند بار در روز به‌روز می‌شود.' } },
       { key: 'contact', href: '/contact', title: { en: 'Contact', fa: 'تماس' }, body: { en: 'Email, LinkedIn and GitHub.', fa: 'ایمیل، لینکدین و گیت‌هاب.' } },
     ],
-  },
-  titleblock: {
-    project: { en: 'Project', fa: 'پروژه' },
-    sheet: { en: 'Sheet', fa: 'شیت' },
-    drawn: { en: 'Drawn by', fa: 'ترسیم' },
-    location: { en: 'Location', fa: 'موقعیت' },
-    status: { en: 'Status', fa: 'وضعیت' },
-    rev: { en: 'Revision', fa: 'ویرایش' },
-    available: { en: 'Open to selected projects', fa: 'پذیرای پروژه‌های منتخب' },
   },
   ticker: <Record<Locale, string[]>>{
     en: ['Architectural design', 'Plans & sections', 'BIM · Revit', 'Visualisation', 'Technical space planning', 'Urban analysis · GIS', 'Digital products'],
