@@ -44,6 +44,32 @@ export const copy = {
     ctaWork: { en: 'See the work', fa: 'دیدن پروژه‌ها' },
     ctaDrawings: { en: 'Open the drawings', fa: 'باز کردن نقشه‌ها' },
     caption: { en: 'The Last Shadow of Time — aerial view', fa: 'آخرین سایهٔ زمان — نمای هوایی' },
+    ctaAbout: { en: 'About me', fa: 'درباره من' },
+    ctaExplore: { en: 'What is on this site', fa: 'این سایت چه دارد' },
+    drawing: { en: 'A-000 · Folded-plate study, drawn for this site', fa: 'A-000 · مطالعهٔ سقف چین‌دار، ترسیم‌شده برای همین سایت' },
+  },
+  home: {
+    aboutLabel: { en: '01 — Who I am', fa: '۰۱ — من کی هستم' },
+    aboutTitle: { en: 'Hello, I am Amin', fa: 'سلام، من امین هستم' },
+    aboutBody: {
+      en: 'I trained as an architect and work across architectural design, technical documentation, BIM and 3D visualisation. ARCHVANTA is where I keep it together: my projects, the drawings behind them, and the software I build on the side, like FRONTIER.',
+      fa: 'معماری خوانده‌ام و در طراحی معماری، مستندسازی فنی، BIM و مصورسازی سه‌بعدی کار می‌کنم. ARCHVANTA جایی است که همهٔ این‌ها را کنار هم نگه می‌دارم: پروژه‌هایم، نقشه‌های پشتشان و نرم‌افزارهایی که در کنارش می‌سازم، مثل FRONTIER.',
+    },
+    mapLabel: { en: '02 — On this site', fa: '۰۲ — در این سایت' },
+    mapTitle: { en: 'What you will find here', fa: 'اینجا چه پیدا می‌کنید' },
+    mapIntro: {
+      en: 'ARCHVANTA is my studio online: the place for my architecture, my drawings and the digital products I build. Pick a room.',
+      fa: 'ARCHVANTA استودیوی آنلاین من است: جایی برای معماری، نقشه‌ها و محصولات دیجیتالی که می‌سازم. یکی از بخش‌ها را انتخاب کنید.',
+    },
+    practiceLabel: { en: '03 — Skills', fa: '۰۳ — مهارت‌ها' },
+    sections: [
+      { key: 'work', href: '/work', title: { en: 'Work', fa: 'پروژه‌ها' }, body: { en: 'Architecture, sports and urban projects, each with its story, drawings and images.', fa: 'پروژه‌های معماری، ورزشی و شهری، هرکدام با روایت، نقشه‌ها و تصاویرش.' } },
+      { key: 'drawings', href: '/drawings', title: { en: 'Drawings', fa: 'نقشه‌ها' }, body: { en: 'Plans, sections and elevations you can zoom into, sheet by sheet.', fa: 'پلان، برش و نما که می‌شود شیت‌به‌شیت رویشان زوم کرد.' } },
+      { key: 'about', href: '/about', title: { en: 'About & skills', fa: 'درباره من و مهارت‌ها' }, body: { en: 'Background, experience, software and my résumé.', fa: 'سابقه، تجربه، نرم‌افزارها و رزومه.' } },
+      { key: 'ventures', href: '/ventures', title: { en: 'Ventures', fa: 'پروژه‌های دیجیتال' }, body: { en: 'Digital products I design and build, plus interactive 3D objects.', fa: 'محصولات دیجیتالی که طراحی می‌کنم و می‌سازم، به‌همراه اشیای سه‌بعدی تعاملی.' } },
+      { key: 'frontier', href: '#/frontier/', title: { en: 'FRONTIER', fa: 'FRONTIER' }, body: { en: 'My bilingual technology-news site, updated several times a day.', fa: 'سایت خبر فناوری دوزبانهٔ من که چند بار در روز به‌روز می‌شود.' } },
+      { key: 'contact', href: '/contact', title: { en: 'Contact', fa: 'تماس' }, body: { en: 'Email, LinkedIn and GitHub.', fa: 'ایمیل، لینکدین و گیت‌هاب.' } },
+    ],
   },
   titleblock: {
     project: { en: 'Project', fa: 'پروژه' },

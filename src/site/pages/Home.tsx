@@ -1,19 +1,46 @@
-import { useRef, useState } from 'react';
 import { useI18n } from '../../lib/i18n';
 import { brandHref } from '../../lib/unifiedRouter';
-import { tr } from '../../content/portfolio';
-import { copy, pendingProject, person, pick, practice, projects, sheets, ventures } from '../content';
+import { copy, person, pick, practice, projects, sheets, ventures } from '../content';
 import { Discipline, I } from '../icons';
 import { Mark } from '../Logo';
-import { PlanViewer } from '../PlanViewer';
 import { Arrow, ContactCta, SecHead, useScrollReveal } from '../shared';
+
+/** Original line drawing for the hero: a folded-plate roof study built from the logo's A/V fold. Not a project. */
+function HeroDrawing() {
+  const peaks = Array.from({ length: 11 }, (_, i) => 150 + i * 90);
+  const roof = peaks.map((x, i) => `${i ? 'L' : 'M'}${x} ${i % 2 ? 300 : 210}`).join(' ');
+  const valleys = peaks.filter((_, i) => i % 2);
+  return (
+    <svg className="sx-hd" viewBox="0 0 1200 640" preserveAspectRatio="xMidYMid meet" aria-hidden="true">
+      <g className="sx-hd-ink">
+        <path pathLength={1} d="M60 520 H1140" />
+        <path pathLength={1} d={roof} />
+        <path pathLength={1} d="M150 210 V520 M1050 300 V520" />
+        {valleys.map((x) => (
+          <path key={x} pathLength={1} d={`M${x} 300 V520`} />
+        ))}
+        <path pathLength={1} d="M150 470 H1050 M150 380 H1050" className="sx-hd-thin" />
+        {peaks.slice(0, -1).map((x) => (
+          <path key={x} pathLength={1} d={`M${x + 45} 380 V520`} className="sx-hd-thin" />
+        ))}
+        <path pathLength={1} d="M150 140 H1050 M150 128 V152 M1050 128 V152" className="sx-hd-thin" />
+        <path pathLength={1} d="M90 560 H330 M90 552 V568 M150 556 V564 M210 556 V564 M270 556 V564 M330 552 V568" className="sx-hd-thin" />
+        <circle cx="1110" cy="90" r="22" pathLength={1} className="sx-hd-thin" />
+        <path pathLength={1} d="M1110 62 L1118 90 L1110 84 L1102 90 Z" className="sx-hd-thin" />
+        <path pathLength={1} d="M60 60 L600 210" className="sx-hd-sun" />
+      </g>
+      <circle cx="600" cy="210" r="7" className="sx-hd-dot" />
+      <text x="600" y="124" textAnchor="middle" className="sx-hd-text">36.00</text>
+      <text x="90" y="590" className="sx-hd-text">0 · 2 · 4 · 6 m</text>
+      <text x="1110" y="132" textAnchor="middle" className="sx-hd-text">N</text>
+    </svg>
+  );
+}
 
 function Hero() {
   const { locale } = useI18n();
   const h = copy.hero;
   const tb = copy.titleblock;
-  const lead = projects()[0];
-  const cover = lead?.cover?.src ?? '/work-media/images/v43.webp';
   return (
     <section className="sx-hero" aria-labelledby="sx-hero-title">
       <div className="sx-wrap">
@@ -30,31 +57,18 @@ function Hero() {
           <div className="sx-hero-aside">
             <p>{pick(h.body, locale)}</p>
             <div className="sx-hero-actions">
-              <a className="sx-btn sx-btn--solid" href={brandHref('/work')}>
-                {pick(h.ctaWork, locale)} <Arrow />
-              </a>
-              <a className="sx-btn" href={brandHref('/drawings')}>{pick(h.ctaDrawings, locale)}</a>
+              <button type="button" className="sx-btn sx-btn--solid" onClick={() => document.getElementById('sx-map-section')?.scrollIntoView({ behavior: 'smooth', block: 'start' })}>
+                {pick(h.ctaExplore, locale)} <Arrow />
+              </button>
+              <a className="sx-btn" href={brandHref('/about')}>{pick(h.ctaAbout, locale)}</a>
             </div>
           </div>
         </div>
         <div className="sx-sheet">
-          <a className="sx-sheet-media" href={lead ? brandHref(`/work/${lead.slug}`) : brandHref('/work')}>
-            <img src={cover} alt="" width="1500" height="766" fetchPriority="high" decoding="async" />
-            <svg className="sx-axes" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
-              <line className="sx-draw" x1="20" y1="0" x2="20" y2="100" />
-              <line className="sx-draw" x1="50" y1="0" x2="50" y2="100" />
-              <line className="sx-draw" x1="80" y1="0" x2="80" y2="100" />
-              <line className="sx-draw" x1="0" y1="34" x2="100" y2="34" />
-              <line className="sx-draw" x1="0" y1="72" x2="100" y2="72" />
-            </svg>
-            {['A', 'B', 'C'].map((c, i) => (
-              <span key={c} className="sx-bubble" style={{ insetInlineStart: `calc(${[20, 50, 80][i]}% - 13px)`, insetBlockStart: 10 }} aria-hidden="true">{c}</span>
-            ))}
-            {['1', '2'].map((c, i) => (
-              <span key={c} className="sx-bubble" style={{ insetInlineStart: 10, insetBlockStart: `calc(${[34, 72][i]}% - 13px)` }} aria-hidden="true">{c}</span>
-            ))}
-            <span className="sx-sheet-caption">{pick(h.caption, locale)}</span>
-          </a>
+          <div className="sx-sheet-media sx-sheet-media--drawing sx-grid-bg">
+            <HeroDrawing />
+            <span className="sx-sheet-caption">{pick(h.drawing, locale)}</span>
+          </div>
           <dl className="sx-titleblock">
             <div><dt>{pick(tb.project, locale)}</dt><dd>ARCHVANTA</dd></div>
             <div><dt>{pick(tb.drawn, locale)}</dt><dd className="sx-fa-ok">{pick(person.name, locale)}</dd></div>
@@ -81,78 +95,35 @@ function Hero() {
   );
 }
 
-function SelectedWork() {
+/** Index of the site's sections: text only, no project imagery on the home page. */
+function SiteMap() {
   const { locale } = useI18n();
-  const w = copy.work;
-  const list = projects();
-  const float = useRef<HTMLDivElement>(null);
-  const [img, setImg] = useState<string | null>(null);
-  const move = (e: React.PointerEvent) => {
-    const el = float.current;
-    if (el) el.style.translate = `${e.clientX}px ${e.clientY}px`;
+  const m = copy.home;
+  const counts: Record<string, string> = {
+    work: locale === 'fa' ? `${projects().length.toLocaleString('fa-IR')} پروژه` : `${projects().length} projects`,
+    drawings: locale === 'fa' ? `${sheets().length.toLocaleString('fa-IR')} شیت` : `${sheets().length} sheets`,
+    about: locale === 'fa' ? 'رزومه' : 'CV',
+    ventures: locale === 'fa' ? `${ventures.length.toLocaleString('fa-IR')} محصول` : `${ventures.length} products`,
+    frontier: locale === 'fa' ? 'زنده' : 'Live',
+    contact: locale === 'fa' ? 'ایمیل' : 'Email',
   };
   return (
-    <section className="sx-section sx-wrap" aria-labelledby="sx-work">
-      <SecHead
-        id="sx-work"
-        label={w.label}
-        title={w.title}
-        action={
-          <a className="sx-link" href={brandHref('/work')}>
-            {pick(w.all, locale)} <Arrow />
-          </a>
-        }
-      />
-      <ol className="sx-index" onPointerMove={move} onPointerLeave={() => setImg(null)}>
-        {list.map((p, i) => (
-          <li key={p.slug} className="sx-reveal">
-            <a href={brandHref(`/work/${p.slug}`)} onPointerEnter={() => setImg(p.cover?.src ?? null)} onFocus={() => setImg(null)}>
-              <span className="sx-index-thumb" aria-hidden="true"><img src={p.cover?.src} alt="" loading="lazy" decoding="async" /></span>
+    <section className="sx-section sx-wrap" aria-labelledby="sx-map" id="sx-map-section">
+      <SecHead id="sx-map" label={m.mapLabel} title={m.mapTitle} />
+      <p className="sx-lede sx-reveal" style={{ marginBlockEnd: 24, maxInlineSize: '48ch', fontSize: 'clamp(17px,1.6vw,21px)', color: 'var(--sx-ink-2)' }}>{pick(m.mapIntro, locale)}</p>
+      <ol className="sx-index sx-index--map" data-testid="site-map">
+        {m.sections.map((x, i) => (
+          <li key={x.key} className="sx-reveal">
+            <a href={x.href.startsWith('#') ? x.href : brandHref(x.href)}>
               <span className="sx-mono sx-n">{String(i + 1).padStart(2, '0')}</span>
-              <h3>{tr(p.title, locale)}</h3>
-              <span className="sx-index-meta">{tr(p.type ?? p.category, locale)}</span>
-              <span className="sx-mono sx-year">{p.year}</span>
+              <h3>{pick(x.title, locale)}</h3>
+              <span className="sx-index-meta">{pick(x.body, locale)}</span>
+              <span className="sx-mono sx-year sx-fa-ok">{counts[x.key]}</span>
               <span className="sx-arrow" aria-hidden="true"><Arrow /></span>
             </a>
           </li>
         ))}
-        <li className="sx-reveal">
-          <div className="sx-index-row sx-pending" aria-disabled="true">
-            <span className="sx-mono sx-n">{String(list.length + 1).padStart(2, '0')}</span>
-            <h3>{pick(pendingProject.title, locale)}</h3>
-            <span className="sx-index-meta">{pick(w.pending, locale)}</span>
-            <span className="sx-mono sx-year">{pendingProject.year}</span>
-            <span className="sx-arrow" aria-hidden="true"><I name="lock" size={14} /></span>
-          </div>
-        </li>
       </ol>
-      <div ref={float} className={`sx-float${img ? ' is-on' : ''}`} aria-hidden="true" style={{ translate: '-999px -999px' }}>
-        {img && <img src={img} alt="" />}
-      </div>
-    </section>
-  );
-}
-
-function DrawingRoom() {
-  const { locale } = useI18n();
-  const d = copy.drawings;
-  const set = sheets().filter((s) => s.kind.en !== 'Board').slice(0, 8);
-  return (
-    <section className="sx-section sx-wrap" aria-labelledby="sx-drawings">
-      <SecHead
-        id="sx-drawings"
-        label={d.label}
-        title={d.title}
-        action={
-          <a className="sx-link" href={brandHref('/drawings')}>
-            {pick(d.open, locale)} <Arrow />
-          </a>
-        }
-      />
-      <p className="sx-lede sx-reveal" style={{ marginBlockEnd: 32, maxInlineSize: '44ch', fontSize: 'clamp(17px,1.6vw,21px)', color: 'var(--sx-ink-2)' }}>{pick(d.intro, locale)}</p>
-      <div className="sx-reveal">
-        <PlanViewer sheets={set} initial="v35" compact />
-      </div>
     </section>
   );
 }
@@ -161,7 +132,7 @@ function Practice() {
   const { locale } = useI18n();
   return (
     <section className="sx-section sx-wrap" aria-labelledby="sx-practice">
-      <SecHead id="sx-practice" label={copy.practice.label} title={copy.practice.title} />
+      <SecHead id="sx-practice" label={copy.home.practiceLabel} title={copy.practice.title} />
       <div className="sx-practice">
         {practice.map((p, i) => (
           <article key={p.kind} className="sx-reveal" style={{ transitionDelay: `${i * 80}ms` }}>
@@ -213,27 +184,12 @@ export function VentureCards() {
   );
 }
 
-function Ventures() {
-  const { locale } = useI18n();
-  return (
-    <section className="sx-section sx-wrap" aria-labelledby="sx-ventures">
-      <SecHead
-        id="sx-ventures"
-        label={copy.ventures.label}
-        title={copy.ventures.title}
-        action={<a className="sx-link" href={brandHref('/ventures')}>{pick(copy.ventures.open, locale)} <Arrow /></a>}
-      />
-      <VentureCards />
-    </section>
-  );
-}
-
 function AboutTeaser() {
   const { locale } = useI18n();
   const a = copy.about;
   return (
     <section className="sx-section sx-wrap" aria-labelledby="sx-about">
-      <SecHead id="sx-about" label={a.label} title={a.title} />
+      <SecHead id="sx-about" label={copy.home.aboutLabel} title={copy.home.aboutTitle} />
       <div className="sx-about">
         <figure className="sx-portrait sx-reveal">
           <img src={person.portrait} alt={pick(person.name, locale)} loading="lazy" decoding="async" width="791" height="798" />
@@ -241,7 +197,7 @@ function AboutTeaser() {
         </figure>
         <div className="sx-about-body sx-reveal">
           <p className="sx-lede">{pick(a.lede, locale)}</p>
-          <p>{pick(copy.hero.body, locale)}</p>
+          <p>{pick(copy.home.aboutBody, locale)}</p>
           <div><a className="sx-btn" href={brandHref('/about')}>{pick(a.more, locale)} <Arrow /></a></div>
         </div>
       </div>
@@ -255,11 +211,9 @@ export default function Home() {
   return (
     <>
       <Hero />
-      <SelectedWork />
-      <DrawingRoom />
-      <Practice />
-      <Ventures />
       <AboutTeaser />
+      <SiteMap />
+      <Practice />
       <ContactCta />
     </>
   );
