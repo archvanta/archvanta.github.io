@@ -111,9 +111,9 @@ function SelectedWork() {
         projects={projectCatalog(locale)
           .filter((p) =>
             [
-              "modular-data-centre",
               "the-last-shadow-of-time",
-              "technical-level-48-racks",
+              "tennis-volleyball-complex",
+              "ramsar-urban-baseline-study",
             ].includes(p.slug),
           )}
       />

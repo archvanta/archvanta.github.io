@@ -38,7 +38,7 @@ for (const locale of ["en", "fa"])
     for (const route of [
       "/#/",
       "/#/projects",
-      "/#/projects/modular-data-centre",
+      "/#/projects/the-last-shadow-of-time",
       "/#/frontier/",
       "/#/portfolio",
     ])
@@ -76,7 +76,7 @@ test("one shell connects home, portfolio, projects and editorial deep links", as
   await page.getByRole("button", { name: "Skip to projects" }).click();
   await page.getByRole("link", { name: "All projects", exact: true }).last().click();
   await expect(page).toHaveURL(/#\/projects$/);
-  await expect(page.locator(".av-project-card")).toHaveCount(12);
+  await expect(page.locator(".av-project-card")).toHaveCount(6);
   const projectCovers = await page
     .locator(".av-project-card img")
     .evaluateAll((images) => images.map((image) => image.getAttribute("src")));
@@ -86,10 +86,10 @@ test("one shell connects home, portfolio, projects and editorial deep links", as
     expect((await page.request.get(src!)).status()).toBe(200);
   }
   await page.locator(".av-project-card").first().getByRole("link").click();
-  await expect(page).toHaveURL(/#\/projects\/modular-data-centre$/);
+  await expect(page).toHaveURL(/#\/projects\/the-last-shadow-of-time$/);
   await page.reload();
-  await expect(page.locator("h1")).toHaveText("Modular Data Center");
-  await expect(page.locator(".av-gallery figure")).toHaveCount(8);
+  await expect(page.locator("h1")).toHaveText("The Last Shadow of Time");
+  await expect(page.locator(".av-gallery figure")).toHaveCount(14);
   await page.locator(".av-gallery button").first().click();
   await expect(page.locator(".av-lightbox")).toBeVisible();
   await page.keyboard.press("Escape");
@@ -112,12 +112,13 @@ test("project categories and concepts remain distinct; proposals and credits sur
   await expect(page.locator(".av-project-card small").first()).toContainText(
     "Concept",
   );
-  await page.goto("/#/projects/two-level-facility");
+  await page.goto("/#/projects/the-last-shadow-of-time");
   await expect(page.locator(".av-project-description")).toContainText(
-    "three-person",
+    "academic supervision",
   );
+  await page.goto("/#/projects/ramsar-urban-baseline-study");
   await expect(page.locator(".av-proposal")).toHaveAttribute("open", "");
-  await expect(page.locator(".av-proposal figure")).toHaveCount(9);
+  await expect(page.locator(".av-proposal figure")).toHaveCount(38);
   for (const src of await page
     .locator(".av-proposal img")
     .evaluateAll((imgs) => imgs.map((i) => i.getAttribute("src")!))) {
@@ -145,9 +146,9 @@ test("local saved stories survive canonical route changes and reload", async ({
 test("global search covers both portfolio and real article adapter", async ({
   page,
 }) => {
-  await page.goto("/#/search?q=modular");
+  await page.goto("/#/search?q=museum");
   await expect(page.locator(".av-search-results").first()).toContainText(
-    "Modular Data Center",
+    "The Last Shadow of Time",
   );
   await page.goto("/#/search?q=OpenAI");
   await expect(page.locator(".av-search-results")).toContainText("FRONTIER");
@@ -161,11 +162,11 @@ test("theme/language migrate once and keep context across all routes", async ({
     localStorage.setItem("archvanta:language", "fa");
     localStorage.setItem("archvanta:theme", "light");
   });
-  await page.goto("/#/projects/modular-data-centre");
+  await page.goto("/#/projects/the-last-shadow-of-time");
   await expect(page.locator("html")).toHaveAttribute("lang", "fa");
   await expect(page.locator("html")).toHaveAttribute("data-theme", "light");
   await page.getByRole("button", { name: "EN — English (انگلیسی)" }).click();
-  await expect(page).toHaveURL(/#\/projects\/modular-data-centre$/);
+  await expect(page).toHaveURL(/#\/projects\/the-last-shadow-of-time$/);
   await page.reload();
   await expect(page.locator("html")).toHaveAttribute("lang", "en");
   expect(
@@ -288,11 +289,11 @@ test("project headlines appear near the end of home and link to the selected pro
     const section = document.querySelector('#selected-work')!;
     return document.querySelector('#process')!.compareDocumentPosition(section) & Node.DOCUMENT_POSITION_FOLLOWING;
   })).toBeTruthy();
-  await expect(carousel.locator(".ph-title")).toHaveText("Modular Data Center");
+  await expect(carousel.locator(".ph-title")).toHaveText("The Last Shadow of Time");
   await carousel.getByRole("button", { name: "Next project" }).click();
-  await expect(carousel.locator(".ph-title")).toHaveText("Technical Level, 48 Racks");
+  await expect(carousel.locator(".ph-title")).toHaveText("Outdoor Tennis & Volleyball Complex");
   await carousel.getByRole("link", { name: "Explore project" }).click();
-  await expect(page).toHaveURL(/#\/projects\/technical-level-48-racks$/);
+  await expect(page).toHaveURL(/#\/projects\/tennis-volleyball-complex$/);
 });
 test("opening is a permanent scroll chapter, skips to projects and stays off deep links", async ({
   page,
@@ -367,7 +368,7 @@ test('FRONTIER shares smooth wheel scrolling, resets route momentum and pauses f
     requestAnimationFrame(sample);
   }));
   expect(Math.max(...samples)).toBe(0);
-  await page.goto('/#/projects/modular-data-centre');
+  await page.goto('/#/projects/the-last-shadow-of-time');
   await expect(page.locator('html')).toHaveClass(/lenis-smooth/);
   await page.locator('.av-gallery button').first().click();
   await expect(page.locator('.av-lightbox')).toBeVisible();
@@ -391,15 +392,15 @@ test("shared English and Persian fonts are loaded and used by form controls", as
 
 test('uploaded portfolio proposals stay complete, with uniform drawing frames and résumé access', async ({ page }) => {
   await page.emulateMedia({ reducedMotion: 'reduce' });
-  const proposals: [string, number][] = [['two-level-facility',9],['technical-level-48-racks',19],['rack-room-reorganisation',14],['existing-hall-conversion',25],['data-hall-retrofit',14],['ramsar-urban-baseline-study',38]];
+  const proposals: [string, number][] = [['ramsar-urban-baseline-study',38]];
   for (const [slug, count] of proposals) {
     await page.goto(`/#/projects/${slug}`);
     await expect(page.locator('.av-proposal')).toHaveAttribute('open', '');
     await expect(page.locator('.av-proposal figure')).toHaveCount(count);
   }
-  await page.goto('/#/projects/modular-data-centre');
+  await page.goto('/#/projects/the-last-shadow-of-time');
   const frames = page.locator('.av-gallery button');
-  await expect(frames).toHaveCount(8);
+  await expect(frames).toHaveCount(14);
   const heights = await frames.evaluateAll(elements => elements.map(e => e.getBoundingClientRect().height));
   expect(Math.max(...heights) - Math.min(...heights)).toBeLessThan(1);
   await expect(page.locator('.project-deliverables')).toBeVisible();

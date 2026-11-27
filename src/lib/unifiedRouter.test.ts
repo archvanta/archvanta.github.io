@@ -18,9 +18,9 @@ describe("canonical application boundaries", () => {
   it("keeps creator, project and editorial about routes distinct", () => {
     expect(appRoute("#/about")).toMatchObject({ kind: "brand", page: "about" });
     expect(appRoute("#/frontier/about")).toMatchObject({ kind: "editorial" });
-    expect(appRoute("#/projects/modular-data-centre")).toMatchObject({
+    expect(appRoute("#/projects/the-last-shadow-of-time")).toMatchObject({
       page: "project",
-      slug: "modular-data-centre",
+      slug: "the-last-shadow-of-time",
     });
     expect(brandHref("/search", { q: "BIM & architecture" })).toBe(
       "#/search?q=BIM+%26+architecture",
@@ -28,12 +28,15 @@ describe("canonical application boundaries", () => {
   });
   it("preserves actual portfolio projects separately from concept studies", () => {
     const items = projectCatalog("en");
-    expect(items).toHaveLength(12);
+    expect(items).toHaveLength(6);
     expect(items.filter((p) => p.kind === "concept")).toHaveLength(3);
-    expect(portfolio.projects).toHaveLength(9);
+    expect(portfolio.projects).toHaveLength(3);
     expect(portfolio.objects).toHaveLength(5);
     expect(
-      items.find((p) => p.slug === "two-level-facility")?.source?.credit,
-    ).toContain("three-person");
+      items.find((p) => p.slug === "the-last-shadow-of-time")?.source?.credit,
+    ).toContain("academic supervision");
+    expect(
+      portfolio.projects.some((p) => p.category === "Data Center Design"),
+    ).toBe(false);
   });
 });
