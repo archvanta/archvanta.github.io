@@ -7,8 +7,9 @@ import {
   useRef,
   useState,
 } from "react";
-import { GlobalHeader, EditorialNav } from "./components/GlobalHeader";
-import { GlobalFooter } from "./components/GlobalFooter";
+import { EditorialNav } from "./components/GlobalHeader";
+import { SiteHeader, SiteFooter } from "./site/SiteChrome";
+import "./site/site.css";
 import { AccountToast } from "./components/account/AccountToast";
 import { Loading } from "./components/States";
 import { AccountProvider } from "./lib/account/AccountProvider";
@@ -23,7 +24,7 @@ import { appRoute } from "./lib/unifiedRouter";
 import { focusSection } from "./lib/focus";
 import { projectCatalog } from "./content/catalog";
 import { restoreScroll, useSmoothScroll } from "./lib/smoothScroll";
-const BrandPages = lazy(() => import("./brand/pages/BrandPages"));
+const SitePages = lazy(() => import("./site/SitePages"));
 const EditorialPage = lazy(() =>
   import("./EditorialPage").then((m) => ({ default: m.EditorialPage })),
 );
@@ -54,6 +55,9 @@ export function App({
     window.addEventListener("scroll", record, { passive: true });
     return () => window.removeEventListener("scroll", record);
   }, [path]);
+  useLayoutEffect(() => {
+    document.documentElement.dataset.site = route.kind;
+  }, [route.kind]);
   useEffect(() => {
     const label =
       route.kind === "editorial"
@@ -61,8 +65,8 @@ export function App({
         : route.page === "project"
           ? `${projectCatalog(locale).find((p) => p.slug === route.slug)?.title || "Project"} — ARCHVANTA`
           : route.page === "home"
-            ? "ARCHVANTA — Architecture, Infrastructure & Digital Systems"
-            : `${route.page === "portfolio" ? "MohammadAmin Sadeghi" : route.page.charAt(0).toUpperCase() + route.page.slice(1)} — ARCHVANTA`;
+            ? "ARCHVANTA — MohammadAmin Sadeghi, architectural designer"
+            : `${route.page === "venture" && route.slug === "frontier" ? "FRONTIER" : route.page.charAt(0).toUpperCase() + route.page.slice(1)} — ARCHVANTA`;
     document.title = label;
   }, [route, locale]);
   return (
@@ -76,7 +80,7 @@ export function App({
             {t("mock_banner")}
           </p>
         )}
-        <GlobalHeader route={route} />
+        <SiteHeader route={route} />
         {route.kind === "editorial" && <EditorialNav route={route.route} />}
         <main id="main" tabIndex={-1}>
           <div ref={setHeroSlot} className="hero-slot" />
@@ -88,7 +92,7 @@ export function App({
             }
           >
             {route.kind === "brand" ? (
-              <BrandPages key={path} route={route} />
+              <SitePages key={path} route={route} />
             ) : (
               <div className="container site-main route-view" key={path}>
                 <EditorialPage
@@ -101,7 +105,7 @@ export function App({
             )}
           </Suspense>
         </main>
-        <GlobalFooter />
+        <SiteFooter />
         <AccountToast />
       </AccountProvider>
     </DataProvider>

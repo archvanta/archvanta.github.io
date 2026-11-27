@@ -5,3 +5,16 @@ playwright-report/
 *.local
 .DS_Store
 dist-mock/
+
+# CAD/BIM source files are never committed (publish SVG/PNG exports only).
+*.dxf
+*.dwg
+*.rvt
+*.rfa
+*.ifc
+*.bak
+# Local QA helpers
+pw.local.config.ts
+.shot.mjs
+.shots.sh
+.overflow*.mjs

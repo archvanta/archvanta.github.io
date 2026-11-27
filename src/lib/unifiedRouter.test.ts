@@ -39,4 +39,23 @@ describe("canonical application boundaries", () => {
       portfolio.projects.some((p) => p.category === "Data Center Design"),
     ).toBe(false);
   });
+  it("maps the redesigned sections and keeps older links working", () => {
+    expect(appRoute("#/work")).toMatchObject({ kind: "brand", page: "work" });
+    expect(appRoute("#/work/ramsar-urban-baseline-study")).toMatchObject({
+      page: "project",
+      slug: "ramsar-urban-baseline-study",
+    });
+    expect(appRoute("#/projects")).toMatchObject({ page: "work" });
+    const drawings = appRoute("#/drawings?sheet=v35");
+    expect(drawings).toMatchObject({ kind: "brand", page: "drawings" });
+    expect(drawings.kind === "brand" && drawings.params.get("sheet")).toBe("v35");
+    expect(appRoute("#/ventures")).toMatchObject({ page: "ventures" });
+    expect(appRoute("#/ventures/frontier")).toMatchObject({ page: "venture", slug: "frontier" });
+    expect(appRoute("#/lab")).toMatchObject({ page: "ventures" });
+    expect(appRoute("#/lab/tower.glb")).toMatchObject({ page: "model", slug: "tower.glb" });
+    expect(appRoute("#/portfolio")).toMatchObject({ page: "about" });
+    expect(appRoute("#/expertise")).toMatchObject({ page: "about" });
+    expect(appRoute("#/contact")).toMatchObject({ page: "contact" });
+    expect(appRoute("#/frontier/")).toMatchObject({ kind: "editorial" });
+  });
 });

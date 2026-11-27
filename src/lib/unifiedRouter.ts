@@ -1,6 +1,10 @@
 import { parseHash, type Route } from "./router";
 export type BrandPage =
   | "home"
+  | "work"
+  | "drawings"
+  | "ventures"
+  | "venture"
   | "expertise"
   | "projects"
   | "project"
@@ -40,15 +44,19 @@ export function appRoute(hash: string): AppRoute {
   if (head === "frontier") return { kind: "editorial", route: parseHash(hash) };
   if (!head || ["home", "perspective", "systems", "process"].includes(head))
     return { kind: "brand", page: "home", params };
-  if (head === "projects")
-    return { kind: "brand", page: slug ? "project" : "projects", slug, params };
+  if (head === "work" || head === "projects")
+    return { kind: "brand", page: slug ? "project" : "work", slug, params };
+  if (head === "drawings") return { kind: "brand", page: "drawings", slug, params };
+  if (head === "ventures")
+    return { kind: "brand", page: slug ? "venture" : "ventures", slug, params };
   if (head === "lab")
-    return { kind: "brand", page: slug ? "model" : "lab", slug, params };
-  if (
-    ["expertise", "portfolio", "about", "contact", "search"].includes(
-      head || "",
-    )
-  )
+    return slug
+      ? { kind: "brand", page: "model", slug, params }
+      : { kind: "brand", page: "ventures", params };
+  // Older links: the expertise and portfolio pages became the about page.
+  if (head === "expertise" || head === "portfolio")
+    return { kind: "brand", page: "about", params };
+  if (["about", "contact", "search"].includes(head || ""))
     return { kind: "brand", page: head as BrandPage, slug, params };
   return { kind: "editorial", route: parseHash(hash) };
 }

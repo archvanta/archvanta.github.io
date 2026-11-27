@@ -1,55 +1,56 @@
-import { test, expect } from "@playwright/test";
+import { test, expect, type Page } from "@playwright/test";
 import AxeBuilder from "@axe-core/playwright";
+
+const BRAND_ROUTES = [
+  "/#/",
+  "/#/work",
+  "/#/work/the-last-shadow-of-time",
+  "/#/drawings",
+  "/#/about",
+  "/#/ventures",
+  "/#/ventures/frontier",
+  "/#/contact",
+];
+
+async function prefs(page: Page, locale: string, theme = "dark") {
+  await page.addInitScript(
+    ([l, t]) => {
+      // Seed once per tab so reloads keep what the test changed.
+      if (sessionStorage.getItem("e2e-seeded")) return;
+      sessionStorage.setItem("e2e-seeded", "1");
+      localStorage.setItem("signal-ai:locale", l);
+      localStorage.setItem("signal-ai:theme", t);
+    },
+    [locale, theme],
+  );
+}
+
 for (const locale of ["en", "fa"])
   for (const width of [360, 390, 768, 1024, 1440, 1920])
-    test(`unified routes and layout ${locale} ${width}`, async ({ page }) => {
+    test(`site routes render without overflow ${locale} ${width}`, async ({ page }) => {
       await page.setViewportSize({ width, height: 900 });
       await page.emulateMedia({ reducedMotion: "reduce" });
-      await page.addInitScript(
-        (l) => localStorage.setItem("signal-ai:locale", l),
-        locale,
-      );
+      await prefs(page, locale);
       const errors: string[] = [];
       page.on("pageerror", (e) => errors.push(e.message));
-      for (const route of [
-        "/#/",
-        "/#/projects",
-        "/#/frontier/",
-        "/#/portfolio",
-      ]) {
+      for (const route of [...BRAND_ROUTES, "/#/frontier/"]) {
         await page.goto(route);
-        await expect(page.locator("main h1")).toHaveCount(1);
-        await expect(page.locator(".av-wordmark")).toBeVisible();
+        await expect(page.locator("main h1"), route).toHaveCount(1);
+        await expect(page.locator(".sx-header-in .sx-brand")).toBeVisible();
         expect(
-          await page.evaluate(
-            () => document.documentElement.scrollWidth - innerWidth,
-          ),
+          await page.evaluate(() => document.documentElement.scrollWidth - innerWidth),
           route,
         ).toBeLessThanOrEqual(1);
       }
-      await expect(page.locator("html")).toHaveAttribute(
-        "dir",
-        locale === "fa" ? "rtl" : "ltr",
-      );
+      await expect(page.locator("html")).toHaveAttribute("dir", locale === "fa" ? "rtl" : "ltr");
       expect(errors).toEqual([]);
     });
+
 for (const locale of ["en", "fa"])
   for (const theme of ["dark", "light"])
-    for (const route of [
-      "/#/",
-      "/#/projects",
-      "/#/projects/the-last-shadow-of-time",
-      "/#/frontier/",
-      "/#/portfolio",
-    ])
+    for (const route of [...BRAND_ROUTES, "/#/frontier/"])
       test(`accessibility ${locale} ${theme} ${route}`, async ({ page }) => {
-        await page.addInitScript(
-          ({ locale, theme }) => {
-            localStorage.setItem("signal-ai:locale", locale);
-            localStorage.setItem("signal-ai:theme", theme);
-          },
-          { locale, theme },
-        );
+        await prefs(page, locale, theme);
         await page.emulateMedia({ reducedMotion: "reduce" });
         await page.goto(route);
         await expect(page.locator("main h1")).toHaveCount(1);
@@ -60,164 +61,226 @@ for (const locale of ["en", "fa"])
         expect(
           result.violations.map((v) => ({
             id: v.id,
-            nodes: v.nodes.map((n) => ({
-              target: n.target,
-              message: n.failureSummary,
-            })),
+            nodes: v.nodes.map((n) => ({ target: n.target, message: n.failureSummary })),
           })),
         ).toEqual([]);
       });
-test("one shell connects home, portfolio, projects and editorial deep links", async ({
-  page,
-}) => {
-  await page.emulateMedia({ reducedMotion: "reduce" });
-  await page.goto("/");
-  await expect(page.locator("h1")).toHaveAccessibleName("ARCHVANTA");
-  await page.getByRole("button", { name: "Skip to projects" }).click();
-  await page.getByRole("link", { name: "All projects", exact: true }).last().click();
-  await expect(page).toHaveURL(/#\/projects$/);
-  await expect(page.locator(".av-project-card")).toHaveCount(6);
-  const projectCovers = await page
-    .locator(".av-project-card img")
-    .evaluateAll((images) => images.map((image) => image.getAttribute("src")));
-  expect(projectCovers.length).toBeGreaterThan(0);
-  for (const src of projectCovers) {
-    expect(src).toMatch(/^\/(work-media\/images|images)\//);
-    expect((await page.request.get(src!)).status()).toBe(200);
+
+test("header navigation marks the current section and links every page", async ({ page }) => {
+  await page.goto("/#/");
+  await expect(page.locator("html")).toHaveAttribute("data-site", "brand");
+  const nav = page.getByRole("navigation", { name: "Main" }).first();
+  for (const [name, url, heading] of [
+    ["Work", /#\/work$/, /Work|Projects/],
+    ["Drawings", /#\/drawings$/, /Drawing/],
+    ["About", /#\/about$/, /About/],
+    ["Ventures", /#\/ventures$/, /Ventures/],
+    ["Contact", /#\/contact$/, /Contact|talk/i],
+  ] as const) {
+    await nav.getByRole("link", { name, exact: true }).click();
+    await expect(page).toHaveURL(url);
+    await expect(page.locator("main h1")).toContainText(heading);
+    await expect(nav.getByRole("link", { name, exact: true })).toHaveAttribute("aria-current", "page");
   }
-  await page.locator(".av-project-card").first().getByRole("link").click();
-  await expect(page).toHaveURL(/#\/projects\/the-last-shadow-of-time$/);
-  await page.reload();
-  await expect(page.locator("h1")).toHaveText("The Last Shadow of Time");
-  await expect(page.locator(".av-gallery figure")).toHaveCount(14);
-  await page.locator(".av-gallery button").first().click();
-  await expect(page.locator(".av-lightbox")).toBeVisible();
-  await page.keyboard.press("Escape");
-  await expect(page.locator(".av-lightbox")).not.toBeVisible();
-  await page.locator(".av-global-nav a", { hasText: "FRONTIER" }).click();
-  await expect(page.locator(".av-editorial")).toBeVisible();
-  await expect(page.locator("#top-signals")).toBeVisible();
-  await page.locator(".nh-slide.is-active .nh-actions a").first().click();
-  await expect(page).toHaveURL(/#\/frontier\/story\//);
-  await page.reload();
-  await expect(page.locator("main h1")).toHaveCount(1);
-  await page.goBack();
-  await expect(page.locator(".av-editorial")).toBeVisible();
-});
-test("project categories and concepts remain distinct; proposals and credits survive", async ({
-  page,
-}) => {
-  await page.goto("/#/projects?category=concepts");
-  await expect(page.locator(".av-project-card")).toHaveCount(3);
-  await expect(page.locator(".av-project-card small").first()).toContainText(
-    "Concept",
-  );
-  await page.goto("/#/projects/the-last-shadow-of-time");
-  await expect(page.locator(".av-project-description")).toContainText(
-    "academic supervision",
-  );
-  await page.goto("/#/projects/ramsar-urban-baseline-study");
-  await expect(page.locator(".av-proposal")).toHaveAttribute("open", "");
-  await expect(page.locator(".av-proposal figure")).toHaveCount(38);
-  for (const src of await page
-    .locator(".av-proposal img")
-    .evaluateAll((imgs) => imgs.map((i) => i.getAttribute("src")!))) {
-    expect((await page.request.get(src)).status()).toBe(200);
-  }
-});
-test("local saved stories survive canonical route changes and reload", async ({
-  page,
-}) => {
-  await page.goto("/#/frontier/");
+  await nav.getByRole("link", { name: "FRONTIER", exact: true }).click();
+  await expect(page).toHaveURL(/#\/frontier\/$/);
+  await expect(page.locator("html")).toHaveAttribute("data-site", "editorial");
   await expect(page.locator(".story-card").first()).toBeAttached();
-  await page
-    .locator(".story-card")
-    .first()
-    .getByRole("button", { name: "Save story", exact: true })
-    .click();
-  await page.goto("/#/frontier/saved");
-  await page.reload();
-  await expect(page.locator("[data-testid=saved-row]")).toHaveCount(1);
-  await page.locator(".av-wordmark").click();
-  await expect(page.locator("h1")).toHaveAccessibleName("ARCHVANTA");
-  await page.goto("/#/frontier/saved");
-  await expect(page.locator("[data-testid=saved-row]")).toHaveCount(1);
+  await page.locator(".sx-header-in .sx-brand").click();
+  await expect(page).toHaveURL(/#\/$/);
+  await expect(page.locator("html")).toHaveAttribute("data-site", "brand");
 });
-test("global search covers both portfolio and real article adapter", async ({
-  page,
-}) => {
+
+test("older links still land on the right pages", async ({ page }) => {
+  for (const [from, h1] of [
+    ["/#/projects", /Work|Projects/],
+    ["/#/projects/the-last-shadow-of-time", /The Last Shadow of Time/],
+    ["/#/portfolio", /About/],
+    ["/#/expertise", /About/],
+    ["/#/lab", /Ventures/],
+  ] as const) {
+    await page.goto(from);
+    await expect(page.locator("main h1"), from).toContainText(h1);
+  }
+});
+
+test("work index filters projects and opens a project with its story, drawings and gallery", async ({ page }) => {
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  await page.goto("/#/work");
+  const cards = page.getByTestId("work-card");
+  await expect(cards).toHaveCount(3);
+  const filters = page.locator(".sx-filter button");
+  await filters.nth(1).click();
+  await expect(filters.nth(1)).toHaveAttribute("aria-pressed", "true");
+  expect(await cards.count()).toBeLessThan(3);
+  await filters.first().click();
+  await expect(cards).toHaveCount(3);
+  await page.getByRole("link", { name: /The Last Shadow of Time/ }).first().click();
+  await expect(page).toHaveURL(/#\/work\/the-last-shadow-of-time$/);
+  await expect(page.locator("main h1")).toHaveText("The Last Shadow of Time");
+  await expect(page.getByTestId("project-credit")).toBeVisible();
+  await expect(page.locator(".sx-story-part").first()).toBeVisible();
+  await expect(page.getByTestId("plan-viewer")).toBeVisible();
+  const shots = page.locator(".sx-gallery button");
+  expect(await shots.count()).toBeGreaterThan(6);
+  await shots.first().click();
+  const box = page.locator("dialog.sx-lightbox");
+  await expect(box).toBeVisible();
+  await page.keyboard.press("ArrowRight");
+  await page.keyboard.press("Escape");
+  await expect(box).toBeHidden();
+  await expect(page.locator(".sx-next a, a.sx-next").first()).toBeVisible();
+});
+
+test("plan viewer zooms, fits, switches sheets and keeps the sheet in the URL", async ({ page }) => {
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  await page.goto("/#/drawings");
+  const viewer = page.getByTestId("plan-viewer");
+  const zoom = viewer.getByTestId("zoom-level");
+  await expect(zoom).toHaveText(/\d+%/);
+  const start = parseInt((await zoom.textContent()) ?? "0", 10);
+  await viewer.getByRole("button", { name: "Zoom in" }).click();
+  await expect.poll(async () => parseInt((await zoom.textContent()) ?? "0", 10)).toBeGreaterThan(start);
+  await viewer.getByRole("button", { name: "Fit to view" }).click();
+  await expect.poll(async () => parseInt((await zoom.textContent()) ?? "0", 10)).toBe(start);
+  // Keyboard: focus the stage and zoom with +.
+  await viewer.locator(".sx-stage").focus();
+  await page.keyboard.press("+");
+  await expect.poll(async () => parseInt((await zoom.textContent()) ?? "0", 10)).toBeGreaterThan(start);
+  await page.keyboard.press("0");
+  await expect.poll(async () => parseInt((await zoom.textContent()) ?? "0", 10)).toBe(start);
+  // Wheel zoom stays inside the viewer and does not scroll the page.
+  const y = await page.evaluate(() => scrollY);
+  await viewer.locator(".sx-stage").hover();
+  await page.mouse.wheel(0, -400);
+  await expect.poll(async () => parseInt((await zoom.textContent()) ?? "0", 10)).toBeGreaterThan(start);
+  expect(await page.evaluate(() => scrollY)).toBe(y);
+  // Blueprint ink toggle.
+  const ink = viewer.getByRole("button", { name: /ink|blueprint/i });
+  await ink.click();
+  await expect(viewer).toHaveAttribute("data-ink", "blueprint");
+  // Choosing a sheet updates the deep link, which survives a reload.
+  const second = viewer.locator(".sx-sheets li button").nth(1);
+  await second.click();
+  await expect(second).toHaveAttribute("aria-current", "true");
+  await expect(page).toHaveURL(/#\/drawings\?sheet=/);
+  const url = page.url();
+  await page.reload();
+  expect(page.url()).toBe(url);
+  await expect(page.getByTestId("plan-viewer").locator(".sx-sheets li button").nth(1)).toHaveAttribute("aria-current", "true");
+});
+
+test("Persian layout is right-to-left with Persian copy and fonts", async ({ page }) => {
+  await prefs(page, "fa", "light");
+  await page.goto("/#/work/the-last-shadow-of-time");
+  await expect(page.locator("html")).toHaveAttribute("lang", "fa");
+  await expect(page.locator("html")).toHaveAttribute("data-theme", "light");
+  await expect(page.locator("main h1")).toHaveText("آخرین سایه‌ی زمان");
+  await page.evaluate(() => document.fonts.ready);
+  expect(await page.locator("main h1").evaluate((e) => getComputedStyle(e).fontFamily)).toContain("Vazirmatn");
+  await page.locator(".sx-header .sx-lang").click();
+  await expect(page.locator("html")).toHaveAttribute("lang", "en");
+  await expect(page).toHaveURL(/#\/work\/the-last-shadow-of-time$/);
+  expect(await page.locator("main h1").evaluate((e) => getComputedStyle(e).fontFamily)).toContain("Geist");
+  await page.reload();
+  await expect(page.locator("html")).toHaveAttribute("lang", "en");
+  expect(await page.evaluate(() => localStorage.getItem("signal-ai:locale"))).toBe("en");
+});
+
+test("theme toggle switches and persists", async ({ page }) => {
+  await prefs(page, "en", "dark");
+  await page.goto("/#/about");
+  await expect(page.locator("html")).toHaveAttribute("data-theme", "dark");
+  await page.getByRole("button", { name: /light/i }).first().click();
+  await expect(page.locator("html")).toHaveAttribute("data-theme", "light");
+  await page.reload();
+  await expect(page.locator("html")).toHaveAttribute("data-theme", "light");
+});
+
+test("mobile menu opens as a dialog, traps focus and closes back to its button", async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto("/#/");
+  const opener = page.locator(".sx-menu-btn");
+  await opener.click();
+  const drawer = page.locator("dialog.sx-drawer");
+  await expect(drawer).toBeVisible();
+  await expect(opener).toHaveAttribute("aria-expanded", "true");
+  await page.keyboard.press("Escape");
+  await expect(drawer).toBeHidden();
+  await expect(opener).toBeFocused();
+  await opener.click();
+  await drawer.getByRole("link", { name: /Drawings/ }).click();
+  await expect(page).toHaveURL(/#\/drawings$/);
+  await expect(drawer).toBeHidden();
+});
+
+test("about page offers the résumé PDF and describes data-center skills without project drawings", async ({ page }) => {
+  await page.goto("/#/about");
+  const resume = page.locator(".studio-resume-link");
+  await expect(resume).toHaveAttribute("href", /MohammadAmin_Sadeghi_Resume\.pdf$/);
+  const response = await page.request.get("/documents/MohammadAmin_Sadeghi_Resume.pdf");
+  expect(response.status()).toBe(200);
+  expect((await response.body()).subarray(0, 5).toString()).toBe("%PDF-");
+  await expect(page.locator(".sx-capability")).toBeVisible();
+  await expect(page.locator(".sx-capability img")).toHaveCount(0);
+});
+
+test("withdrawn confidential projects are gone from every listing and route", async ({ page }) => {
+  for (const slug of [
+    "modular-data-centre",
+    "two-level-facility",
+    "technical-level-48-racks",
+    "rack-room-reorganisation",
+    "existing-hall-conversion",
+    "data-hall-retrofit",
+  ]) {
+    await page.goto(`/#/work/${slug}`);
+    await expect(page.locator("main")).not.toContainText(/rack|data hall/i);
+    // The preview server answers unknown paths with the app shell, so check the type.
+    const res = await page.request.get(`/work-media/images/pp-${slug}-01.webp`);
+    expect(res.headers()["content-type"] ?? "", slug).not.toContain("image");
+  }
+  await page.goto("/#/drawings");
+  const ids = await page.locator(".sx-sheets li small").allTextContents();
+  expect(ids.join(" ")).not.toMatch(/data-hall|rack/i);
+});
+
+test("ventures link FRONTIER inside the site and the other products outside it", async ({ page }) => {
+  await page.goto("/#/ventures");
+  await expect(page.locator(".sx-venture")).toHaveCount(4);
+  const external = page.locator(".sx-venture[target=_blank]");
+  for (const a of await external.all()) await expect(a).toHaveAttribute("rel", "noopener noreferrer");
+  await expect(page.locator('.sx-venture[href="https://archvanta.github.io/cheghad/"]')).toHaveCount(1);
+  await page.locator(".sx-venture--lead").click();
+  await expect(page).toHaveURL(/#\/ventures\/frontier$/);
+  await expect(page.getByTestId("frontier-stats")).toBeVisible();
+  await page.getByRole("link", { name: /Open FRONTIER|Visit FRONTIER|Open the site/i }).first().click();
+  await expect(page).toHaveURL(/#\/frontier\//);
+});
+
+test("global search covers portfolio and FRONTIER articles", async ({ page }) => {
   await page.goto("/#/search?q=museum");
-  await expect(page.locator(".av-search-results").first()).toContainText(
-    "The Last Shadow of Time",
-  );
+  await expect(page.locator(".av-search-results").first()).toContainText("The Last Shadow of Time");
   await page.goto("/#/search?q=OpenAI");
   await expect(page.locator(".av-search-results")).toContainText("FRONTIER");
   await page.locator(".av-search-results a").first().click();
   await expect(page).toHaveURL(/#\/frontier\/story\//);
 });
-test("theme/language migrate once and keep context across all routes", async ({
-  page,
-}) => {
-  await page.addInitScript(() => {
-    localStorage.setItem("archvanta:language", "fa");
-    localStorage.setItem("archvanta:theme", "light");
-  });
-  await page.goto("/#/projects/the-last-shadow-of-time");
-  await expect(page.locator("html")).toHaveAttribute("lang", "fa");
-  await expect(page.locator("html")).toHaveAttribute("data-theme", "light");
-  await page.getByRole("button", { name: "EN — English (انگلیسی)" }).click();
-  await expect(page).toHaveURL(/#\/projects\/the-last-shadow-of-time$/);
+
+test("FRONTIER saved stories survive route changes and reload", async ({ page }) => {
+  await page.goto("/#/frontier/");
+  await expect(page.locator(".story-card").first()).toBeAttached();
+  await page.locator(".story-card").first().getByRole("button", { name: "Save story", exact: true }).click();
+  await page.goto("/#/frontier/saved");
   await page.reload();
-  await expect(page.locator("html")).toHaveAttribute("lang", "en");
-  expect(
-    await page.evaluate(() => localStorage.getItem("signal-ai:locale")),
-  ).toBe("en");
+  await expect(page.locator("[data-testid=saved-row]")).toHaveCount(1);
+  await page.locator(".sx-header-in .sx-brand").click();
+  await expect(page.locator("html")).toHaveAttribute("data-site", "brand");
+  await page.goto("/#/frontier/saved");
+  await expect(page.locator("[data-testid=saved-row]")).toHaveCount(1);
 });
-test("mobile nested navigation and keyboard focus", async ({ page }) => {
-  await page.setViewportSize({ width: 390, height: 844 });
-  await page.goto("/");
-  await page.getByRole("button", { name: "Menu", exact: true }).click();
-  await expect(page.locator(".av-mobile-menu")).toBeVisible();
-  await page
-    .locator(".av-mobile-menu")
-    .getByRole("button", { name: "Projects", exact: true })
-    .click();
-  await page
-    .locator(".av-mobile-menu")
-    .getByRole("link", { name: /All projects/ })
-    .click();
-  await expect(page).toHaveURL(/#\/projects$/);
-  await expect(page.locator(".av-mobile-menu")).not.toBeVisible();
-  await page.getByRole("button", { name: "Menu", exact: true }).click();
-  await page.keyboard.press("Escape");
-  await expect(
-    page.getByRole("button", { name: "Menu", exact: true }),
-  ).toBeFocused();
-});
-test("lab tools are preserved and WebGL is not loaded until requested", async ({
-  page,
-}) => {
-  await page.goto("/#/lab");
-  await expect(page.locator(".av-lab-item")).toHaveCount(5);
-  await page.locator(".av-lab-item").nth(1).click();
-  await expect(page.locator(".av-model-launch")).toBeVisible();
-  await expect(page.locator("iframe")).toHaveCount(0);
-  await page.locator(".av-model-launch").click();
-  await expect(page.locator("iframe")).toHaveAttribute(
-    "src",
-    "/work-media/models/obj-server-rack-800x1200x2040.html",
-  );
-  expect(
-    (
-      await page.request.get(
-        "/work-media/models/obj-server-rack-800x1200x2040.html",
-      )
-    ).status(),
-  ).toBe(200);
-});
-test("editorial discovery routes, source attribution and legacy root aliases work", async ({
-  page,
-}) => {
+
+test("FRONTIER discovery routes and source attribution keep working", async ({ page }) => {
   for (const route of [
     "/#/frontier/picks/weekly",
     "/#/frontier/archive",
@@ -228,238 +291,34 @@ test("editorial discovery routes, source attribution and legacy root aliases wor
     "/#/frontier/videos",
   ]) {
     await page.goto(route);
-    await expect(page.locator("main h1")).toHaveCount(1);
-    await expect(page.locator(".av-editorial")).toBeVisible();
+    await expect(page.locator("main h1"), route).toHaveCount(1);
   }
   await page.goto("/#/picks/weekly");
   await expect(page.locator("main h1")).toContainText("Weekly");
   await page.goto("/#/frontier/");
-  await expect(
-    page.locator(".nh-slide.is-active a[target=_blank]").first(),
-  ).toHaveAttribute("rel", "noopener noreferrer");
-});
-test("liquid navigation preserves disclosures, route focus and CSP", async ({
-  page,
-}) => {
-  await page.setViewportSize({ width: 1440, height: 900 });
-  await page.emulateMedia({ reducedMotion: "reduce" });
-  const blocked: string[] = [];
-  await page.exposeFunction("recordCsp", (directive: string) =>
-    blocked.push(directive),
-  );
-  await page.addInitScript(() =>
-    document.addEventListener("securitypolicyviolation", (e) =>
-      (window as unknown as { recordCsp: (d: string) => void }).recordCsp(
-        e.violatedDirective,
-      ),
-    ),
-  );
-  await page.goto("/");
-  await expect(page.locator(".nimbus-nav canvas")).toHaveCount(0);
-  await expect(page.locator(".nimbus-nav .nimbus-drop")).toHaveCount(1);
-  await page.getByRole("button", { name: "Skip to projects" }).click();
-  await expect(page.locator(".project-headlines").first()).toBeInViewport();
-  await page
-    .locator(".nimbus-nav")
-    .getByRole("button", { name: "Projects", exact: true })
-    .click();
-  await page
-    .locator(".nimbus-nav")
-    .getByRole("link", { name: /All projects/ })
-    .click();
-  await expect(page).toHaveURL(/#\/projects$/);
-  await page.locator(".nimbus-nav a").first().focus();
-  await page.keyboard.press("ArrowRight");
-  await expect(
-    page
-      .locator(".nimbus-nav")
-      .getByRole("button", { name: "Expertise", exact: true }),
-  ).toBeFocused();
-  expect(blocked).toEqual([]);
-});
-test("project headlines appear near the end of home and link to the selected project", async ({
-  page,
-}) => {
-  await page.emulateMedia({ reducedMotion: "reduce" });
-  await page.goto("/");
-  const carousel = page.locator(".project-headlines").first();
-  await expect(carousel.locator('.ph-title')).toBeVisible();
-  await expect(page.locator('.circular-testimonials')).toHaveCount(0);
-  expect(await page.evaluate(() => {
-    const section = document.querySelector('#selected-work')!;
-    return document.querySelector('#process')!.compareDocumentPosition(section) & Node.DOCUMENT_POSITION_FOLLOWING;
-  })).toBeTruthy();
-  await expect(carousel.locator(".ph-title")).toHaveText("The Last Shadow of Time");
-  await carousel.getByRole("button", { name: "Next project" }).click();
-  await expect(carousel.locator(".ph-title")).toHaveText("Outdoor Tennis & Volleyball Complex");
-  await carousel.getByRole("link", { name: "Explore project" }).click();
-  await expect(page).toHaveURL(/#\/projects\/tennis-volleyball-complex$/);
-});
-test("opening is a permanent scroll chapter, skips to projects and stays off deep links", async ({
-  page,
-}) => {
-  await page.emulateMedia({ reducedMotion: "reduce" });
-  await page.goto("/");
-  await expect(page.locator(".parallax")).toBeVisible();
-  await expect(page.locator("[data-parallax-layer]")).toHaveCount(4);
-  await expect(page.locator(".expertise .brand-glyph")).toHaveCount(4);
-  await page.getByRole("button", { name: "Skip to projects" }).click();
-  await expect(page.locator(".project-headlines").first()).toBeInViewport();
-  await expect(page.locator(".parallax")).toHaveCount(1);
-  await page.evaluate(() => (location.hash = "#/projects"));
-  await expect(page.locator("main h1")).toHaveText("Projects");
-  await expect(page.locator(".parallax")).toHaveCount(0);
-  await page.evaluate(() => (location.hash = "#/"));
-  await expect(page.locator(".parallax")).toBeVisible();
-  await page.goto("/#/projects");
-  await expect(page.locator(".parallax")).toHaveCount(0);
+  await expect(page.locator(".nh-slide.is-active a[target=_blank]").first()).toHaveAttribute("rel", "noopener noreferrer");
 });
 
-test("parallax reverses while shared smooth scrolling survives route changes", async ({ page }) => {
-  const computerMedia: string[] = [];
-  page.on("request", request => {
-    if (/frontier-hero\.(mp4|webp)|frontier-hero-poster/.test(request.url())) computerMedia.push(request.url());
+test("3D models stay behind an explicit request", async ({ page }) => {
+  const glb: string[] = [];
+  page.on("request", (r) => {
+    if (/\.(glb|obj)$/i.test(r.url())) glb.push(r.url());
   });
-  await page.emulateMedia({ reducedMotion: "no-preference" });
-  await page.goto("/");
-  const opening = page.locator(".parallax");
-  await expect(page.locator('html')).toHaveClass(/lenis/);
-  await expect(page.locator('h1')).toHaveAccessibleName('ARCHVANTA');
-  await page.evaluate(() => window.scrollTo(0, 450));
-  const offsets = () => page.locator('[data-parallax-layer]').evaluateAll(elements => elements.map(e => new DOMMatrixReadOnly(getComputedStyle(e).transform).m42));
-  await expect.poll(async () => (await offsets())[0]).toBeGreaterThan(20);
-  const positions = await offsets();
-  expect(positions[0]).toBeGreaterThan(positions[1]);
-  expect(positions[1]).toBeGreaterThan(positions[2]);
-  expect(positions[2]).toBeGreaterThan(positions[3]);
-  await page.evaluate(() => window.scrollTo(0, 0));
-  await expect.poll(async () => Math.abs((await offsets())[0])).toBeLessThan(1);
-  await expect(page.locator('.statue-title')).toBeInViewport();
-  expect(computerMedia).toEqual([]);
-  await expect(opening.locator("video")).toHaveCount(0);
-  expect(await page.evaluate(() => document.documentElement.scrollWidth - innerWidth)).toBeLessThanOrEqual(1);
-  await page.goto('/#/projects');
-  await expect(page.locator('html')).toHaveClass(/lenis/);
-  await page.goto('/');
-  await expect(page.locator('html')).toHaveClass(/lenis/);
-  await page.emulateMedia({ reducedMotion: 'reduce' });
-  await expect(page.locator('html')).not.toHaveClass(/lenis/);
-  await expect(opening).toHaveAttribute('data-motion', 'reduced');
+  await page.goto("/#/ventures");
+  const model = page.locator('a[href^="#/lab/"]').first();
+  await expect(model).toBeVisible();
+  expect(glb).toEqual([]);
+  await model.click();
+  await expect(page).toHaveURL(/#\/lab\//);
+  await expect(page.locator("main h1")).toHaveCount(1);
 });
 
-test('FRONTIER shares smooth wheel scrolling, resets route momentum and pauses for dialogs', async ({ page }) => {
-  await page.emulateMedia({ reducedMotion: 'no-preference' });
-  await page.goto('/#/frontier/');
-  await expect(page.locator('html')).toHaveClass(/lenis-smooth/);
-  await expect(page.locator('.story-card[data-tone]').first()).toHaveCSS('border-top-width', '0px');
-  await page.mouse.move(600, 500);
-  await page.mouse.wheel(0, 900);
-  // Feed content loads progressively, so the first wheel can be clamped by its initial height.
-  await expect.poll(() => page.evaluate(() => window.scrollY)).toBeGreaterThan(100);
-  await expect.poll(() => page.evaluate(() => window.scrollY)).toBeLessThanOrEqual(900);
-  await page.mouse.wheel(0, 900);
-  await page.locator('.av-global-nav').getByRole('link', { name: 'Digital Lab', exact: true }).click();
-  await expect(page).toHaveURL(/#\/lab$/);
-  await expect(page.locator('html')).toHaveClass(/lenis-smooth/);
-  await expect.poll(() => page.evaluate(() => window.scrollY)).toBe(0);
-  const samples = await page.evaluate(() => new Promise<number[]>(resolve => {
-    const positions: number[] = [];
-    const sample = () => { positions.push(window.scrollY); if (positions.length < 20) requestAnimationFrame(sample); else resolve(positions); };
-    requestAnimationFrame(sample);
-  }));
-  expect(Math.max(...samples)).toBe(0);
-  await page.goto('/#/projects/the-last-shadow-of-time');
-  await expect(page.locator('html')).toHaveClass(/lenis-smooth/);
-  await page.locator('.av-gallery button').first().click();
-  await expect(page.locator('.av-lightbox')).toBeVisible();
-  await expect(page.locator('html')).toHaveClass(/lenis-stopped/);
-  await page.keyboard.press('Escape');
-  await expect(page.locator('html')).not.toHaveClass(/lenis-stopped/);
-  await page.emulateMedia({ reducedMotion: 'reduce' });
-  await expect(page.locator('html')).not.toHaveClass(/lenis/);
-});
-
-test("shared English and Persian fonts are loaded and used by form controls", async ({ page }) => {
-  await page.goto("/#/projects");
-  await page.evaluate(() => document.fonts.ready);
-  expect(await page.locator("body").evaluate(e => getComputedStyle(e).fontFamily)).toContain("Inter Variable");
-  await page.addInitScript(() => localStorage.setItem("signal-ai:locale", "fa"));
-  await page.reload();
-  await expect(page.locator("html")).toHaveAttribute("lang", "fa");
-  expect(await page.locator("body").evaluate(e => getComputedStyle(e).fontFamily)).toContain("Vazirmatn Variable");
-  expect(await page.locator("#site-search").evaluate(e => getComputedStyle(e).fontFamily)).toContain("Vazirmatn Variable");
-});
-
-test('uploaded portfolio proposals stay complete, with uniform drawing frames and résumé access', async ({ page }) => {
-  await page.emulateMedia({ reducedMotion: 'reduce' });
-  const proposals: [string, number][] = [['ramsar-urban-baseline-study',38]];
-  for (const [slug, count] of proposals) {
-    await page.goto(`/#/projects/${slug}`);
-    await expect(page.locator('.av-proposal')).toHaveAttribute('open', '');
-    await expect(page.locator('.av-proposal figure')).toHaveCount(count);
+test("social and icon metadata point at the new brand files", async ({ page }) => {
+  await page.goto("/#/");
+  for (const path of ["/archvanta-icon.svg", "/favicon.png", "/apple-touch-icon.png", "/social-preview.png"]) {
+    const res = await page.request.get(path);
+    expect(res.status(), path).toBe(200);
   }
-  await page.goto('/#/projects/the-last-shadow-of-time');
-  const frames = page.locator('.av-gallery button');
-  await expect(frames).toHaveCount(14);
-  const heights = await frames.evaluateAll(elements => elements.map(e => e.getBoundingClientRect().height));
-  expect(Math.max(...heights) - Math.min(...heights)).toBeLessThan(1);
-  await expect(page.locator('.project-deliverables')).toBeVisible();
-  await page.goto('/#/portfolio');
-  const resume = page.locator('.studio-resume-link');
-  await expect(resume).toHaveAttribute('download', 'MohammadAmin_Sadeghi_Resume.pdf');
-  const response = await page.request.get('/documents/MohammadAmin_Sadeghi_Resume.pdf');
-  expect(response.status()).toBe(200);
-  expect((await response.body()).subarray(0,5).toString()).toBe('%PDF-');
-  await expect(page.locator('.cheghad-link')).toHaveAttribute('href','https://archvanta.github.io/cheghad/');
-});
-
-test('minimal discipline symbols and restored system layers work; header stays outside page motion', async ({ page }) => {
-  await page.goto('/');
-  // The development-only fixture banner is absent from the published shell.
-  await page.evaluate(() => document.querySelector('.mock-banner')?.remove());
-  await expect(page.locator('.statue-composition')).toHaveAttribute('data-ready','true');
-  await expect(page.locator('.brand-glyph').first()).toHaveAttribute('viewBox','0 0 15 15');
-  await expect(page.locator('.brand-glyph img, .generated-system-stage')).toHaveCount(0);
-  await expect(page.locator('.av-header')).toHaveCSS('view-transition-name','site-header');
-  const group = page.getByRole('group', { name: 'Design layers' });
-  await group.scrollIntoViewIfNeeded();
-  for (let i=0;i<4;i++) {
-    await group.getByRole('button').nth(i).click();
-    const model = page.locator('.systems-visual .architectural-model');
-    await expect(model).toHaveClass(`architectural-model model-mode-${[0,1,3,2][i]}`);
-    expect((await model.boundingBox())!.width).toBeGreaterThan(200);
-  }
-  await expect(page.locator('.studio-signature-name')).toHaveCount(0);
-  await page.evaluate(() => {
-    const root = window as typeof window & { headerSamples: number[]; stopHeaderSampling: boolean };
-    root.headerSamples=[]; root.stopHeaderSampling=false;
-    const sample = () => { root.headerSamples.push(document.querySelector('.av-header')!.getBoundingClientRect().top); if(!root.stopHeaderSampling) requestAnimationFrame(sample); }; sample();
-  });
-  for (const label of ['Digital Lab','About','Contact','Home']) await page.locator('.av-global-nav').getByRole('link',{name:label,exact:true}).click();
-  const samples=await page.evaluate(()=>{const root=window as typeof window & {headerSamples:number[];stopHeaderSampling:boolean};root.stopHeaderSampling=true;return root.headerSamples});
-  expect(Math.max(...samples)-Math.min(...samples)).toBeLessThan(1);
-});
-
-test("studio actions connect real projects, discipline pages and model tools", async ({ page }) => {
-  await page.emulateMedia({ reducedMotion: 'reduce' });
-  await page.goto('/');
-  await page.locator('.studio-hero-actions').getByRole('link', { name: 'Explore projects' }).click();
-  await expect(page).toHaveURL(/#\/projects$/);
-  const count = await page.locator('.av-project-card').count();
-  await expect(page.locator('.work-filters a').first().locator('.studio-filter-count')).toHaveText(String(count));
-  await page.goto('/');
-  await page.locator('.studio-discipline-index a').nth(2).click();
-  await expect(page).toHaveURL(/#\/expertise\/infrastructure$/);
-  await page.goto('/');
-  await page.locator('.studio-hero-actions').getByRole('link', { name: 'Enter the Lab' }).click();
-  await expect(page).toHaveURL(/#\/lab$/);
-  await expect(page.locator('.studio-lab-schematic')).toHaveCount(5);
-  await page.locator('.av-lab-item').nth(1).click();
-  await expect(page.locator('.av-model-launch')).toBeVisible();
-  await expect(page.locator('.av-model-view iframe')).toHaveCount(0);
-  await page.goto('/#/contact');
-  await page.locator('.back-top').scrollIntoViewIfNeeded();
-  await page.locator('.back-top').click();
-  await expect.poll(() => page.evaluate(() => window.scrollY)).toBe(0);
-  await expect(page).toHaveURL(/#\/contact$/);
+  await expect(page.locator('link[rel="icon"][type="image/svg+xml"]')).toHaveAttribute("href", /archvanta-icon\.svg/);
+  await expect(page).toHaveTitle(/ARCHVANTA/);
 });

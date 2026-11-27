@@ -21,6 +21,7 @@ export interface PortfolioProject {
   model?: string;
   tools?: string[];
   kind?: string;
+  kicker?: string;
   discipline?: string;
   overview?: string;
   challenge?: string;
