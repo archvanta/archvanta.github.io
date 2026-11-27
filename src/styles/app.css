@@ -2047,12 +2047,12 @@ html[lang='fa'] .story-card .story-title {
 }
 
 .story-card[data-tone]:hover {
-  border-color: rgba(255, 255, 255, 0.28);
+  border-color: var(--card-rim-hover);
 }
 
 .story-card[data-tone] .story-media {
-  background: rgba(0, 0, 0, 0.28);
-  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.14);
+  background: var(--card-well);
+  box-shadow: 0 0 0 1px var(--card-line);
 }
 
 .story-card[data-tone] .kicker-cat {
@@ -2084,33 +2084,33 @@ html[lang='fa'] .story-card .story-title {
 }
 
 .story-card[data-tone] .story-meta .icon-btn:hover {
-  background: rgba(255, 255, 255, 0.12);
-  color: #fff;
+  background: var(--card-hover);
+  color: var(--card-ink);
 }
 
 .story-card[data-tone] .bookmark.is-on {
-  color: #fff;
+  color: var(--card-ink);
 }
 
 .story-card[data-tone] .src-mark {
-  background: rgba(255, 255, 255, 0.18);
+  background: var(--card-pill);
 }
 
 .story-card[data-tone] .score-pill {
-  border-color: rgba(255, 255, 255, 0.2);
+  border-color: var(--card-line);
   color: var(--card-ink-2);
 }
 
 .story-card[data-tone] .score-bar {
-  background: rgba(255, 255, 255, 0.16);
+  background: var(--card-line);
 }
 
 .story-card[data-tone] .rank {
-  color: #fff;
+  color: var(--card-ink);
 }
 
 .story-card[data-tone] .story-title a {
-  background-image: linear-gradient(rgba(255, 255, 255, 0.55), rgba(255, 255, 255, 0.55));
+  background-image: linear-gradient(var(--card-ink-3), var(--card-ink-3));
 }
 
 .story-card[data-tone] .mt-label {
@@ -2138,8 +2138,7 @@ html[lang='fa'] .story-card .story-title {
   border-radius: 14px;
   background: var(--card-tile);
   border: 1px solid var(--card-rim);
-  color: #fff;
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  color: var(--card-ink);
 }
 
 .story-tile img {
@@ -2156,7 +2155,7 @@ html[lang='fa'] .story-card .story-title {
   padding: 0.45rem 0.95rem;
   border-radius: 12px;
   background: var(--card-pill);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  border: 1px solid var(--card-rim);
   color: var(--card-ink);
   font-size: var(--fs-sm);
   font-weight: 500;
@@ -2164,7 +2163,7 @@ html[lang='fa'] .story-card .story-title {
 }
 
 .story-card.is-grid:hover .story-pill {
-  background: rgba(255, 255, 255, 0.2);
+  background: var(--card-hover);
 }
 
 .story-card.is-grid .story-body {
