@@ -322,3 +322,19 @@ test("social and icon metadata point at the new brand files", async ({ page }) =
   await expect(page.locator('link[rel="icon"][type="image/svg+xml"]')).toHaveAttribute("href", /archvanta-icon\.svg/);
   await expect(page).toHaveTitle(/ARCHVANTA/);
 });
+
+test("home page introduces the site without showing project work", async ({ page }) => {
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  await page.goto("/#/");
+  const projectImages = await page
+    .locator("main img")
+    .evaluateAll((els) => els.map((e) => (e as HTMLImageElement).getAttribute("src") ?? "").filter((src) => src.includes("/work-media/") && !src.endsWith("/v00.webp")));
+  expect(projectImages).toEqual([]);
+  await expect(page.getByTestId("plan-viewer")).toHaveCount(0);
+  const map = page.getByTestId("site-map");
+  await expect(map.locator("a")).toHaveCount(6);
+  await page.getByRole("button", { name: "What is on this site" }).click();
+  await expect(map).toBeInViewport();
+  await map.getByRole("link", { name: /Drawings/ }).click();
+  await expect(page).toHaveURL(/#\/drawings$/);
+});
