@@ -54,7 +54,6 @@ export function projectMatches(p: ProjectRecord, filter: string) {
 }
 export const categories: { id: ProjectCategory; en: string; fa: string }[] = [
   { id: "all", en: "All projects", fa: "همهٔ پروژه‌ها" },
-  { id: "data-centers", en: "Data centers", fa: "دیتاسنترها" },
   { id: "architecture", en: "Architecture", fa: "معماری" },
   { id: "bim", en: "BIM", fa: "BIM" },
   { id: "urban", en: "Urban studies", fa: "مطالعات شهری" },
