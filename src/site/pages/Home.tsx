@@ -2,45 +2,11 @@ import { useI18n } from '../../lib/i18n';
 import { brandHref } from '../../lib/unifiedRouter';
 import { copy, person, pick, practice, projects, sheets, ventures } from '../content';
 import { Discipline, I } from '../icons';
-import { Mark } from '../Logo';
 import { Arrow, ContactCta, SecHead, useScrollReveal } from '../shared';
-
-/** Original line drawing for the hero: a folded-plate roof study built from the logo's A/V fold. Not a project. */
-function HeroDrawing() {
-  const peaks = Array.from({ length: 11 }, (_, i) => 150 + i * 90);
-  const roof = peaks.map((x, i) => `${i ? 'L' : 'M'}${x} ${i % 2 ? 300 : 210}`).join(' ');
-  const valleys = peaks.filter((_, i) => i % 2);
-  return (
-    <svg className="sx-hd" viewBox="0 0 1200 640" preserveAspectRatio="xMidYMid meet" aria-hidden="true">
-      <g className="sx-hd-ink">
-        <path pathLength={1} d="M60 520 H1140" />
-        <path pathLength={1} d={roof} />
-        <path pathLength={1} d="M150 210 V520 M1050 300 V520" />
-        {valleys.map((x) => (
-          <path key={x} pathLength={1} d={`M${x} 300 V520`} />
-        ))}
-        <path pathLength={1} d="M150 470 H1050 M150 380 H1050" className="sx-hd-thin" />
-        {peaks.slice(0, -1).map((x) => (
-          <path key={x} pathLength={1} d={`M${x + 45} 380 V520`} className="sx-hd-thin" />
-        ))}
-        <path pathLength={1} d="M150 140 H1050 M150 128 V152 M1050 128 V152" className="sx-hd-thin" />
-        <path pathLength={1} d="M90 560 H330 M90 552 V568 M150 556 V564 M210 556 V564 M270 556 V564 M330 552 V568" className="sx-hd-thin" />
-        <circle cx="1110" cy="90" r="22" pathLength={1} className="sx-hd-thin" />
-        <path pathLength={1} d="M1110 62 L1118 90 L1110 84 L1102 90 Z" className="sx-hd-thin" />
-        <path pathLength={1} d="M60 60 L600 210" className="sx-hd-sun" />
-      </g>
-      <circle cx="600" cy="210" r="7" className="sx-hd-dot" />
-      <text x="600" y="124" textAnchor="middle" className="sx-hd-text">36.00</text>
-      <text x="90" y="590" className="sx-hd-text">0 · 2 · 4 · 6 m</text>
-      <text x="1110" y="132" textAnchor="middle" className="sx-hd-text">N</text>
-    </svg>
-  );
-}
 
 function Hero() {
   const { locale } = useI18n();
   const h = copy.hero;
-  const tb = copy.titleblock;
   return (
     <section className="sx-hero" aria-labelledby="sx-hero-title">
       <div className="sx-wrap">
@@ -63,21 +29,6 @@ function Hero() {
               <a className="sx-btn" href={brandHref('/about')}>{pick(h.ctaAbout, locale)}</a>
             </div>
           </div>
-        </div>
-        <div className="sx-sheet">
-          <div className="sx-sheet-media sx-sheet-media--drawing sx-grid-bg">
-            <HeroDrawing />
-            <span className="sx-sheet-caption">{pick(h.drawing, locale)}</span>
-          </div>
-          <dl className="sx-titleblock">
-            <div><dt>{pick(tb.project, locale)}</dt><dd>ARCHVANTA</dd></div>
-            <div><dt>{pick(tb.drawn, locale)}</dt><dd className="sx-fa-ok">{pick(person.name, locale)}</dd></div>
-            <div><dt>{pick(tb.location, locale)}</dt><dd className="sx-fa-ok">{pick(person.city, locale)} · 35.69°N</dd></div>
-            <div><dt>{pick(tb.status, locale)}</dt><dd className="sx-fa-ok"><span className="sx-status">{pick(tb.available, locale)}</span></dd></div>
-            <div><dt>{pick(tb.sheet, locale)}</dt><dd>A-000 · 1:1</dd></div>
-            <div><dt>{pick(tb.rev, locale)}</dt><dd>2026.11</dd></div>
-            <div className="sx-tb-logo"><dt className="sx-visually-hidden">ARCHVANTA</dt><dd><Mark className="" /></dd></div>
-          </dl>
         </div>
       </div>
       <div className="sx-ticker" aria-hidden="true">
