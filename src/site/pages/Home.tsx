@@ -1,78 +1,35 @@
-import { useEffect, useState } from 'react';
-import Elias, { type EliasBook } from '../../components/ui/elias-author-hero';
 import { useI18n } from '../../lib/i18n';
 import { brandHref } from '../../lib/unifiedRouter';
 import { copy, person, pick, practice, projects, sheets, ventures } from '../content';
 import { Discipline, I } from '../icons';
 import { Arrow, ContactCta, SecHead, useScrollReveal } from '../shared';
 
-const SPLASH_KEY = 'archvanta:splash-seen';
-
-/** The ink splash plays once per browser session; repeat visits go straight to the hero. */
-function useSplashOnce() {
-  const [show] = useState(() => {
-    try {
-      return !sessionStorage.getItem(SPLASH_KEY);
-    } catch {
-      return true;
-    }
-  });
-  useEffect(() => {
-    try {
-      sessionStorage.setItem(SPLASH_KEY, '1');
-    } catch {
-      /* storage blocked: the splash simply plays again next time */
-    }
-  }, []);
-  return show;
-}
-
 function Hero() {
   const { locale } = useI18n();
-  const e = copy.elias;
-  const showSplash = useSplashOnce();
-  const books: EliasBook[] = e.books.map((b) => ({
-    label: pick(b.label, locale),
-    title: pick(b.title, locale),
-    coverLines: b.coverLines[locale],
-    topics: b.topics[locale],
-    art: b.art as EliasBook['art'],
-    colors: b.colors,
-    chapter: pick(e.bookCard.chapter, locale),
-    chapterTitle: pick(b.chapterTitle, locale),
-    text: pick(b.text, locale),
-    href: b.href.startsWith('#') ? b.href : brandHref(b.href),
-  }));
+  const h = copy.hero;
   return (
-    <section className="sx-hero sx-hero--elias" aria-label={pick(person.name, locale)}>
-      {/* The composition is laid out left to right in both languages; the text blocks inside switch to RTL in CSS. */}
-      <div dir="ltr">
-      <Elias
-        key={locale}
-        showSplash={showSplash}
-        name={e.name[locale]}
-        intro={{ roles: e.roles[locale], headline: e.headline[locale], description: pick(copy.hero.body, locale) }}
-        portrait={{ src: '/images/amin-cutout.webp', width: 656, height: 686, alt: pick(person.name, locale) }}
-        books={books}
-        bookCard={{ href: brandHref('/work'), open: pick(e.bookCard.open, locale), close: pick(e.bookCard.close, locale), folio: '1' }}
-        letter={{
-          eyebrow: pick(e.letter.eyebrow, locale),
-          greeting: pick(e.letter.greeting, locale),
-          stamp: pick(e.letter.stamp, locale),
-          postmark: pick(e.letter.postmark, locale),
-          seal: 'A',
-          sealing: pick(e.letter.sealing, locale),
-          messages: e.letter.messages[locale],
-          counter: pick(e.letter.counter, locale),
-        }}
-        socialLinks={[
-          { label: 'LinkedIn', href: person.linkedin },
-          { label: 'GitHub', href: person.github },
-          { label: locale === 'fa' ? 'ایمیل' : 'Email', href: `mailto:${person.email}` },
-        ]}
-        motion={{ cursor: { readLabel: pick(e.cursor, locale) } }}
-        labels={{ socials: pick(e.socialsLabel, locale), readAbout: pick(e.readAbout, locale), dateLocale: locale === 'fa' ? 'fa-IR' : 'en-US' }}
-      />
+    <section className="sx-hero" aria-labelledby="sx-hero-title">
+      <div className="sx-wrap">
+        <div className="sx-hero-head">
+          <h1 id="sx-hero-title">
+            <span className="sx-line"><span>{pick(h.l1, locale)}</span></span>
+            <span className="sx-line">
+              <span>
+                {pick(h.l2a, locale)}
+                <span className="sx-serif sx-accent">{pick(h.l2b, locale)}</span>
+              </span>
+            </span>
+          </h1>
+          <div className="sx-hero-aside">
+            <p>{pick(h.body, locale)}</p>
+            <div className="sx-hero-actions">
+              <button type="button" className="sx-btn sx-btn--solid" onClick={() => document.getElementById('sx-map-section')?.scrollIntoView({ behavior: 'smooth', block: 'start' })}>
+                {pick(h.ctaExplore, locale)} <Arrow />
+              </button>
+              <a className="sx-btn" href={brandHref('/about')}>{pick(h.ctaAbout, locale)}</a>
+            </div>
+          </div>
+        </div>
       </div>
       <div className="sx-ticker" aria-hidden="true">
         <div className="sx-ticker-track">
