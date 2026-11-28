@@ -1,21 +1,62 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useI18n } from '../../lib/i18n';
 import { brandHref } from '../../lib/unifiedRouter';
-import { portfolio, tr, type PortfolioImage } from '../../content/portfolio';
+import { portfolio, tr, type PortfolioImage, type PortfolioProject } from '../../content/portfolio';
 import { copy, pendingProject, pick, projects, sheets } from '../content';
 import { I } from '../icons';
 import { Mark } from '../Logo';
 import { PlanViewer } from '../PlanViewer';
-import { Arrow, ContactCta, PageHead, useScrollReveal } from '../shared';
+import { Arrow, ContactCta, PageHead, SecHead, useScrollReveal } from '../shared';
+
+const DC = 'Data Center Design';
+
+function WorkCard({ x, n }: { x: PortfolioProject; n?: number }) {
+  const { locale } = useI18n();
+  const dc = x.category === DC;
+  return (
+    <a className={`sx-card sx-reveal${dc ? ' sx-card--dc' : ''}`} href={brandHref(`/work/${x.slug}`)} data-testid="work-card">
+      {x.cover ? (
+        <div className="sx-card-media">
+          <img src={x.cover.src} alt={tr(x.cover.label ?? x.title, locale)} loading="lazy" decoding="async" />
+          <span className="sx-chip">{tr(x.status, locale)}</span>
+        </div>
+      ) : (
+        <div className="sx-card-media sx-card-media--plain sx-grid-bg" data-testid="work-card-placeholder">
+          <span className="sx-chip">{tr(x.status, locale)}</span>
+          {n !== undefined && <span className="sx-card-index" aria-hidden="true">{String(n).padStart(2, '0')}</span>}
+          <span className="sx-card-kicker">{tr(x.kicker ?? x.discipline, locale)}</span>
+          {dc && <span className="sx-mono sx-fa-ok sx-card-pending"><I name="lock" /> {pick(copy.work.dcPending, locale)}</span>}
+        </div>
+      )}
+      <div className="sx-card-meta"><span className="sx-mono sx-fa-ok">{tr(x.category, locale)}</span><span className="sx-mono">{x.year}</span></div>
+      <h3>{tr(x.title, locale)}</h3>
+      <p>{tr(x.summary, locale)}</p>
+    </a>
+  );
+}
+
+function PendingCard() {
+  const { locale } = useI18n();
+  return (
+    <div className="sx-card sx-card--pending sx-reveal" aria-disabled="true">
+      <div className="sx-card-media sx-grid-bg"><Mark className="" /><span className="sx-chip">{pick(copy.work.pending, locale)}</span></div>
+      <div className="sx-card-meta"><span className="sx-mono sx-fa-ok">{pick(pendingProject.type, locale)}</span><span className="sx-mono">{pendingProject.year}</span></div>
+      <h3>{pick(pendingProject.title, locale)}</h3>
+    </div>
+  );
+}
 
 export function WorkPage() {
   const { locale } = useI18n();
   const p = copy.page;
+  const w = copy.work;
   const list = projects();
   const cats = useMemo(() => Array.from(new Set(list.map((x) => x.category))), [list]);
   const [cat, setCat] = useState<string | null>(null);
   useScrollReveal(`${locale}${cat}`);
   const shown = list.filter((x) => !cat || x.category === cat);
+  const dc = list.filter((x) => x.category === DC);
+  const rest = list.filter((x) => x.category !== DC);
   return (
     <>
       <div className="sx-wrap">
@@ -28,26 +69,30 @@ export function WorkPage() {
             <button key={c} type="button" aria-pressed={cat === c} onClick={() => setCat(c)}>{tr(c, locale)}</button>
           ))}
         </div>
-        <div className="sx-cards">
-          {shown.map((x) => (
-            <a key={x.slug} className="sx-card sx-reveal" href={brandHref(`/work/${x.slug}`)} data-testid="work-card">
-              <div className="sx-card-media">
-                <img src={x.cover?.src} alt={tr(x.cover?.label ?? x.title, locale)} loading="lazy" decoding="async" />
-                <span className="sx-chip">{tr(x.status, locale)}</span>
+        {cat ? (
+          <div className="sx-cards">
+            {shown.map((x) => <WorkCard key={x.slug} x={x} />)}
+          </div>
+        ) : (
+          <>
+            {dc.length > 0 && (
+              <div className="sx-work-group sx-work-group--dc" data-testid="work-dc">
+                <SecHead id="sx-work-dc" label={w.dcLabel} title={w.dcTitle} />
+                <p className="sx-work-note sx-reveal"><I name="lock" /> {pick(w.dcNote, locale)}</p>
+                <div className="sx-cards">
+                  {dc.map((x, k) => <WorkCard key={x.slug} x={x} n={k + 1} />)}
+                </div>
               </div>
-              <div className="sx-card-meta"><span className="sx-mono sx-fa-ok">{tr(x.category, locale)}</span><span className="sx-mono">{x.year}</span></div>
-              <h3>{tr(x.title, locale)}</h3>
-              <p>{tr(x.summary, locale)}</p>
-            </a>
-          ))}
-          {!cat && (
-            <div className="sx-card sx-card--pending sx-reveal" aria-disabled="true">
-              <div className="sx-card-media sx-grid-bg"><Mark className="" /><span className="sx-chip">{pick(copy.work.pending, locale)}</span></div>
-              <div className="sx-card-meta"><span className="sx-mono sx-fa-ok">{pick(pendingProject.type, locale)}</span><span className="sx-mono">{pendingProject.year}</span></div>
-              <h3>{pick(pendingProject.title, locale)}</h3>
+            )}
+            <div className="sx-work-group">
+              <SecHead id="sx-work-other" label={w.otherLabel} title={w.otherTitle} />
+              <div className="sx-cards">
+                {rest.map((x) => <WorkCard key={x.slug} x={x} />)}
+                <PendingCard />
+              </div>
             </div>
-          )}
-        </div>
+          </>
+        )}
       </section>
       <ContactCta />
     </>
@@ -133,8 +178,8 @@ export function ProjectPage({ slug }: { slug?: string }) {
     : [];
   return (
     <article>
-      <header className="sx-proj-hero">
-        <img src={pr.cover?.src} alt={tr(pr.cover?.label ?? pr.title, locale)} fetchPriority="high" />
+      <header className={`sx-proj-hero${pr.cover ? '' : ' sx-proj-hero--plain sx-grid-bg'}`}>
+        {pr.cover && <img src={pr.cover.src} alt={tr(pr.cover.label ?? pr.title, locale)} fetchPriority="high" />}
         <div className="sx-proj-hero-text">
           <div className="sx-wrap" style={{ display: 'grid', gap: 18 }}>
             <nav className="sx-crumbs sx-mono sx-fa-ok" aria-label={locale === 'fa' ? 'مسیر' : 'Breadcrumb'}>
@@ -163,6 +208,15 @@ export function ProjectPage({ slug }: { slug?: string }) {
               </section>
             ))}
             {pr.credit && <div className="sx-mono sx-fa-ok sx-credit" data-testid="project-credit">{tr(pr.credit, locale)}</div>}
+            {pr.category === DC && (
+              <aside className="sx-redacted sx-reveal" data-testid="project-redacted">
+                <I name="lock" />
+                <div>
+                  <strong>{pick(copy.work.dcPending, locale)}</strong>
+                  <p>{pick(copy.work.dcNote, locale)}</p>
+                </div>
+              </aside>
+            )}
             {pr.model && (
               <p><a className="sx-btn" href={brandHref(`/lab/${pr.model}`)}>{pick(p.model, locale)} <Arrow /></a></p>
             )}

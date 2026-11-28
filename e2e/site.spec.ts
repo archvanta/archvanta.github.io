@@ -5,6 +5,7 @@ const BRAND_ROUTES = [
   "/#/",
   "/#/work",
   "/#/work/the-last-shadow-of-time",
+  "/#/work/two-level-facility",
   "/#/drawings",
   "/#/about",
   "/#/ventures",
@@ -108,13 +109,13 @@ test("work index filters projects and opens a project with its story, drawings a
   await page.emulateMedia({ reducedMotion: "reduce" });
   await page.goto("/#/work");
   const cards = page.getByTestId("work-card");
-  await expect(cards).toHaveCount(3);
+  await expect(cards).toHaveCount(9);
   const filters = page.locator(".sx-filter button");
   await filters.nth(1).click();
   await expect(filters.nth(1)).toHaveAttribute("aria-pressed", "true");
-  expect(await cards.count()).toBeLessThan(3);
+  expect(await cards.count()).toBeLessThan(9);
   await filters.first().click();
-  await expect(cards).toHaveCount(3);
+  await expect(cards).toHaveCount(9);
   await page.getByRole("link", { name: /The Last Shadow of Time/ }).first().click();
   await expect(page).toHaveURL(/#\/work\/the-last-shadow-of-time$/);
   await expect(page.locator("main h1")).toHaveText("The Last Shadow of Time");
@@ -225,7 +226,16 @@ test("about page offers the résumé PDF and describes data-center skills withou
   await expect(page.locator(".sx-capability img")).toHaveCount(0);
 });
 
-test("withdrawn confidential projects are gone from every listing and route", async ({ page }) => {
+test("data-center projects lead the work index as redacted text with no drawings yet", async ({ page }) => {
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  await page.goto("/#/work");
+  const group = page.getByTestId("work-dc");
+  await expect(group).toBeVisible();
+  await expect(group.getByTestId("work-card")).toHaveCount(6);
+  await expect(group.locator("img")).toHaveCount(0);
+  // The data-center group comes before every other project.
+  const first = await page.getByTestId("work-card").first().getAttribute("href");
+  expect(first).toBe("#/work/modular-data-centre");
   for (const slug of [
     "modular-data-centre",
     "two-level-facility",
@@ -235,7 +245,10 @@ test("withdrawn confidential projects are gone from every listing and route", as
     "data-hall-retrofit",
   ]) {
     await page.goto(`/#/work/${slug}`);
-    await expect(page.locator("main")).not.toContainText(/rack|data hall/i);
+    await expect(page.locator("main h1")).toHaveCount(1);
+    await expect(page.getByTestId("project-redacted")).toBeVisible();
+    await expect(page.locator("main article img")).toHaveCount(0);
+    await expect(page.locator("main")).not.toContainText(/telecom|insurance|noor/i);
     // The preview server answers unknown paths with the app shell, so check the type.
     const res = await page.request.get(`/work-media/images/pp-${slug}-01.webp`);
     expect(res.headers()["content-type"] ?? "", slug).not.toContain("image");

@@ -85,14 +85,14 @@ export function AboutPage() {
       </section>
 
       <section className="sx-section sx-wrap" aria-labelledby="sx-cap">
-        <SecHead id="sx-cap" label={t('Capability', 'توانمندی')} title={t('Technical spaces, described not shown', 'فضاهای فنی؛ توضیح، نه نمایش')} />
+        <SecHead id="sx-cap" label={t('Capability', 'توانمندی')} title={t('Technical spaces: the method', 'فضاهای فنی: روش کار')} />
         <div className="sx-capability sx-reveal">
           <CapabilityDiagram />
           <div style={{ display: 'grid', gap: 20 }}>
             <p style={{ color: 'var(--sx-ink-2)' }}>
               {pick(t(
-                'Part of my work is planning equipment-heavy technical rooms inside buildings that already exist. That client work is confidential, so no drawing, name or figure from it is published here. This is the method I bring to it.',
-                'بخشی از کار من برنامه‌ریزی اتاق‌های فنی پرتجهیز داخل ساختمان‌های موجود است. این کارها محرمانه‌اند، پس هیچ نقشه، نام یا عددی از آن‌ها اینجا منتشر نمی‌شود. این روشی است که برای آن به کار می‌برم.',
+                'Part of my work is planning equipment-heavy technical rooms inside buildings that already exist. That client work appears under Work without client, site or team details. This is the method I bring to it.',
+                'بخشی از کار من برنامه‌ریزی اتاق‌های فنی پرتجهیز داخل ساختمان‌های موجود است. این کارها در بخش پروژه‌ها بدون نام کارفرما، محل پروژه و اعضای تیم آمده‌اند. این روشی است که برای آن به کار می‌برم.',
               ), locale)}
             </p>
             <ol>

@@ -62,7 +62,7 @@ export const copy = {
     },
     practiceLabel: { en: '03 — Skills', fa: '۰۳ — مهارت‌ها' },
     sections: [
-      { key: 'work', href: '/work', title: { en: 'Work', fa: 'پروژه‌ها' }, body: { en: 'Architecture, sports and urban projects, each with its story, drawings and images.', fa: 'پروژه‌های معماری، ورزشی و شهری، هرکدام با روایت، نقشه‌ها و تصاویرش.' } },
+      { key: 'work', href: '/work', title: { en: 'Work', fa: 'پروژه‌ها' }, body: { en: 'Data center design, architecture, sports and urban projects, each with its story, drawings and images.', fa: 'طراحی دیتاسنتر و پروژه‌های معماری، ورزشی و شهری، هرکدام با روایت، نقشه‌ها و تصاویرش.' } },
       { key: 'drawings', href: '/drawings', title: { en: 'Drawings', fa: 'نقشه‌ها' }, body: { en: 'Plans, sections and elevations you can zoom into, sheet by sheet.', fa: 'پلان، برش و نما که می‌شود شیت‌به‌شیت رویشان زوم کرد.' } },
       { key: 'about', href: '/about', title: { en: 'About & skills', fa: 'درباره من و مهارت‌ها' }, body: { en: 'Background, experience, software and my résumé.', fa: 'سابقه، تجربه، نرم‌افزارها و رزومه.' } },
       { key: 'ventures', href: '/ventures', title: { en: 'Ventures', fa: 'پروژه‌های دیجیتال' }, body: { en: 'Digital products I design and build, plus interactive 3D objects.', fa: 'محصولات دیجیتالی که طراحی می‌کنم و می‌سازم، به‌همراه اشیای سه‌بعدی تعاملی.' } },
@@ -79,6 +79,15 @@ export const copy = {
     title: { en: 'Selected work', fa: 'پروژه‌های منتخب' },
     all: { en: 'All projects', fa: 'همهٔ پروژه‌ها' },
     pending: { en: 'Drawings in preparation', fa: 'نقشه‌ها در حال آماده‌سازی' },
+    dcLabel: { en: 'Featured — data center design', fa: 'ویژه — طراحی دیتاسنتر' },
+    dcTitle: { en: 'Data center design', fa: 'طراحی دیتاسنتر' },
+    dcNote: {
+      en: 'Client work. Client, site and team details are withheld, and exact building dimensions are left out. Drawings are added only after they have been cleared.',
+      fa: 'کار کارفرمایی. نام کارفرما، محل پروژه و اعضای تیم ذکر نمی‌شود و ابعاد دقیق ساختمان حذف شده است. نقشه‌ها فقط پس از پاک‌سازی اضافه می‌شوند.',
+    },
+    dcPending: { en: 'Drawings being cleared', fa: 'نقشه‌ها در حال پاک‌سازی' },
+    otherTitle: { en: 'Architecture & urban studies', fa: 'معماری و مطالعات شهری' },
+    otherLabel: { en: 'Design & academic projects', fa: 'پروژه‌های طراحی و دانشگاهی' },
     intro: {
       en: 'Academic and independent projects, carried from concept through plans, sections and visualisation.',
       fa: 'پروژه‌های دانشگاهی و مستقل، از ایده تا پلان، برش و مصورسازی.',
@@ -149,8 +158,8 @@ export const copy = {
   page: {
     workTitle: { en: 'Work', fa: 'پروژه‌ها' },
     workBody: {
-      en: 'Architecture, sports and urban studies. Every image here is from the project itself; nothing is a stock render.',
-      fa: 'معماری، ورزشی و مطالعات شهری. همهٔ تصاویر از خود پروژه‌اند، هیچ‌کدام تصویر آماده نیست.',
+      en: 'Data center design, architecture, sports and urban studies. Every image here is from the project itself; nothing is a stock render.',
+      fa: 'طراحی دیتاسنتر، معماری، ورزشی و مطالعات شهری. همهٔ تصاویر از خود پروژه‌اند، هیچ‌کدام تصویر آماده نیست.',
     },
     drawingsTitle: { en: 'Drawing room', fa: 'اتاق نقشه' },
     aboutTitle: { en: 'About', fa: 'درباره من' },
@@ -281,8 +290,8 @@ export const practice = [
       fa: 'برنامه‌ریزی فضاهای پرتجهیز داخل ساختمان‌های موجود: پهنه‌بندی، چیدمان، فاصله‌های سرویس و مسیرهای تأسیسات در برابر سازهٔ ثابت.',
     },
     confidential: {
-      en: 'Client work in this field is confidential. It is described here, never shown.',
-      fa: 'کارهای کارفرمایی این حوزه محرمانه است؛ اینجا فقط توضیح داده می‌شود و نمایش داده نمی‌شود.',
+      en: 'Client work in this field is shown without client, site or team details.',
+      fa: 'کارهای کارفرمایی این حوزه بدون نام کارفرما، محل پروژه و اعضای تیم نمایش داده می‌شود.',
     },
     tags: ['Retrofit', 'Zoning', 'Clearances'],
   },
