@@ -1,26 +1,27 @@
 #!/usr/bin/env node
-// Fails when confidential data-center project material reaches the published
-// site. The owner allows data-center work only as an abstract skill
-// description: no project names, drawings, CAD/BIM source files or images.
+// Guards the published site against confidential data-center material.
+//
+// The owner chose (2026-11-28) to show the data-center projects as redacted
+// text, plus drawings only once he has approved a cleared export. So:
+//  1. CAD/BIM source files are never published, whatever the project.
+//  2. Client, operator and site names never appear anywhere in public/ or src/.
+//  3. Data-center projects carry no client/team wording or exact plate sizes.
+//  4. A data-center project may reference an image only when that exact file
+//     is listed in scripts/dc-approved-media.json (owner-approved, redacted).
 //
 // Usage: node scripts/check-confidential.mjs [dir ...]   (default: public src)
-import { readdirSync, readFileSync, statSync } from 'node:fs';
+import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs';
 import { extname, join, relative } from 'node:path';
 
 const roots = process.argv.slice(2).length ? process.argv.slice(2) : ['public', 'src'];
+const problems = [];
 
-// Source CAD/BIM formats are never published, whatever the project.
+// 1. Source CAD/BIM formats.
 const blockedExt = new Set(['.dxf', '.dwg', '.rvt', '.rfa', '.ifc', '.nwd', '.nwc', '.bak']);
 
-// Identifiers of the withdrawn data-center projects and their sites. The
-// employer named in the CV/résumé is deliberately not listed here.
+// 2. Client, operator and site names. The employer named in the CV/résumé is
+// deliberately not listed here.
 const blockedNames = [
-  /modular-data-cent(?:re|er)/i,
-  /two-level-facility/i,
-  /technical-level-48-racks/i,
-  /rack-room-reorganisation/i,
-  /existing-hall-conversion/i,
-  /data-hall-retrofit/i,
   /iran[\s_-]*insurance/i,
   /\bnoor[\s_-]*(?:data|internet|dc)\b/i,
   /بیمه[\s‌]*ایران/,
@@ -28,7 +29,6 @@ const blockedNames = [
 ];
 
 const textExt = new Set(['.ts', '.tsx', '.js', '.mjs', '.json', '.css', '.html', '.svg', '.md', '.txt', '.xml', '.webmanifest']);
-const problems = [];
 
 function walk(dir) {
   for (const name of readdirSync(dir)) {
@@ -58,6 +58,54 @@ for (const r of roots) {
     walk(r);
   } catch (e) {
     if (e.code !== 'ENOENT') throw e;
+  }
+}
+
+// 3 + 4. Data-center projects in the portfolio.
+const DC = 'Data Center Design';
+const sourcePath = 'src/content/portfolio-source.json';
+const approvedPath = 'scripts/dc-approved-media.json';
+if (existsSync(sourcePath)) {
+  const approved = new Set(existsSync(approvedPath) ? JSON.parse(readFileSync(approvedPath, 'utf8')).files ?? [] : []);
+  const source = JSON.parse(readFileSync(sourcePath, 'utf8'));
+  const fa = {
+    ...JSON.parse(readFileSync('src/content/portfolio-fa.json', 'utf8')),
+    ...JSON.parse(readFileSync('src/content/portfolio-fa-extra.json', 'utf8')),
+  };
+  const dcWording = [
+    /\btele(?:com|communications?)\b/i,
+    /\bclients?\b/i,
+    /\boperator\b/i,
+    /\b(?:three|four|five)-person\b/i,
+    /\d+[.,]\d+\s*[×x]\s*\d+[.,]\d+\s*m/i, // exact plate/hall sizes
+    /\b\d{2,3}[.,]\d{2}\s*m\b/, // exact long dimensions such as 27.33 m
+    /m²/,
+    /\b(?:north|south|east|west)(?:ern)?\b/i,
+    /\b(?:january|february|march|april|may|june|july|august|september|october|november|december)\b/i,
+    /مخابرات|کارفرما/,
+  ];
+  const strings = (o, out = []) => {
+    if (typeof o === 'string') out.push(o);
+    else if (Array.isArray(o)) o.forEach((x) => strings(x, out));
+    else if (o && typeof o === 'object') Object.values(o).forEach((x) => strings(x, out));
+    return out;
+  };
+  const images = (p) => [p.cover, ...(p.gallery ?? []), ...(p.boards?.items ?? [])].filter(Boolean).map((i) => i.src)
+    .concat((p.groups ?? []).flatMap((g) => g[1] ?? []));
+  for (const p of source.projects ?? []) {
+    if (p.category !== DC) continue;
+    for (const s of strings(p)) {
+      for (const text of [s, fa[s]].filter(Boolean)) {
+        for (const re of dcWording) {
+          const m = text.match(re);
+          if (m) problems.push(`${sourcePath} [${p.slug}]: redact "${m[0]}"`);
+        }
+      }
+    }
+    for (const src of images(p)) {
+      if (!approved.has(src)) problems.push(`${sourcePath} [${p.slug}]: image ${src} is not in ${approvedPath}`);
+    }
+    if (p.proposal) problems.push(`${sourcePath} [${p.slug}]: proposal pages need owner-approved files first`);
   }
 }
 

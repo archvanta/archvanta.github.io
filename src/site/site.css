@@ -625,3 +625,33 @@ html[lang='fa'] .sx-footer h3 { font-family: var(--sx-fa); letter-spacing: 0; fo
 html[lang='fa'] .sx-index--map h3 { font-size: clamp(22px, 2.6vw, 36px); }
 .sx-index--map .sx-year { color: var(--sx-muted); text-align: end; }
 @media (max-width: 760px) { .sx-index--map a { grid-template-columns: 1fr auto; } }
+
+/* ---------- Data-center projects (redacted text, drawings pending) ---------- */
+.sx-work-group + .sx-work-group { margin-block-start: clamp(72px, 10vw, 140px); }
+.sx-work-group .sx-sec-head { margin-block-end: 20px; }
+.sx-work-note { display: flex; gap: 10px; align-items: flex-start; max-inline-size: 70ch; margin-block-end: 44px; color: var(--sx-ink-2); font-size: 15px; }
+.sx-work-note svg, .sx-redacted > svg, .sx-card-pending svg { inline-size: 16px; block-size: 16px; flex: none; margin-block-start: 3px; color: var(--sx-accent-ink); }
+.sx-card-media--plain { display: grid; align-content: end; gap: 14px; padding: clamp(18px, 2.4vw, 30px); padding-block-start: 64px; }
+.sx-card-media--plain::before { content: ''; position: absolute; inset: 0; background: radial-gradient(120% 90% at 100% 0%, color-mix(in srgb, var(--sx-accent) 16%, transparent), transparent 60%); pointer-events: none; }
+.sx-card-kicker { position: relative; font-family: var(--sx-serif); font-style: italic; font-size: clamp(24px, 2.6vw, 38px); line-height: 1.08; letter-spacing: -0.02em; color: var(--sx-ink); max-inline-size: 18ch; }
+html[lang='fa'] .sx-card-kicker { font-family: var(--sx-fa); font-style: normal; font-weight: 600; line-height: 1.5; letter-spacing: 0; font-size: clamp(20px, 2vw, 28px); }
+.sx-card-pending { position: relative; display: inline-flex; gap: 8px; align-items: center; color: var(--sx-muted); }
+.sx-card-pending svg { margin: 0; }
+.sx-card--dc:hover .sx-card-media--plain { border-color: var(--sx-accent); }
+.sx-card-media--plain { transition: border-color 0.4s var(--sx-ease); }
+.sx-proj-hero--plain { block-size: auto; min-block-size: 0; padding-block: clamp(120px, 18vw, 220px) 0; background-color: var(--sx-bg-2); }
+.sx-proj-hero--plain::after { display: none; }
+.sx-proj-hero--plain .sx-proj-hero-text { position: relative; color: var(--sx-ink); }
+.sx-proj-hero--plain .sx-proj-hero-text h1 { color: var(--sx-ink); }
+.sx-proj-hero--plain .sx-proj-hero-text .sx-mono { color: var(--sx-muted); }
+.sx-redacted { display: flex; gap: 12px; align-items: flex-start; padding: 18px 20px; border: 1px dashed var(--sx-line-2); border-radius: 14px; background: var(--sx-bg-2); }
+.sx-redacted strong { display: block; margin-block-end: 4px; color: var(--sx-ink); }
+.sx-redacted p { margin: 0; color: var(--sx-ink-2); font-size: 15px; }
+.sx-work-group--dc .sx-cards { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 56px 20px; }
+.sx-work-group--dc .sx-card, .sx-work-group--dc .sx-card:nth-child(n) { grid-column: auto; margin-block-start: 0; }
+.sx-work-group--dc .sx-card h3 { font-size: clamp(24px, 2.2vw, 32px); }
+.sx-work-group--dc .sx-card-media--plain { aspect-ratio: 5 / 4; }
+.sx-card-index { position: absolute; inset-block-start: 6px; inset-inline-end: 18px; font: 300 clamp(64px, 7vw, 112px)/1 var(--sx-font); letter-spacing: -0.06em; color: color-mix(in srgb, var(--sx-accent) 55%, transparent); font-variant-numeric: tabular-nums; }
+.sx-work-group--dc .sx-card-kicker { font-size: clamp(22px, 2vw, 30px); }
+@media (max-width: 1100px) { .sx-work-group--dc .sx-cards { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 640px) { .sx-work-group--dc .sx-cards { grid-template-columns: 1fr; gap: 44px; } }

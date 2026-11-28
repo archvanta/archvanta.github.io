@@ -28,16 +28,21 @@ describe("canonical application boundaries", () => {
   });
   it("preserves actual portfolio projects separately from concept studies", () => {
     const items = projectCatalog("en");
-    expect(items).toHaveLength(6);
+    expect(items).toHaveLength(12);
     expect(items.filter((p) => p.kind === "concept")).toHaveLength(3);
-    expect(portfolio.projects).toHaveLength(3);
+    expect(portfolio.projects).toHaveLength(9);
     expect(portfolio.objects).toHaveLength(5);
     expect(
       items.find((p) => p.slug === "the-last-shadow-of-time")?.source?.credit,
     ).toContain("academic supervision");
     expect(
-      portfolio.projects.some((p) => p.category === "Data Center Design"),
-    ).toBe(false);
+      portfolio.projects.filter((p) => p.category === "Data Center Design"),
+    ).toHaveLength(6);
+    // Data-center projects carry no images until the owner approves cleared exports.
+    for (const p of portfolio.projects.filter((x) => x.category === "Data Center Design")) {
+      expect(p.cover, p.slug).toBeUndefined();
+      expect(p.gallery ?? [], p.slug).toHaveLength(0);
+    }
   });
   it("maps the redesigned sections and keeps older links working", () => {
     expect(appRoute("#/work")).toMatchObject({ kind: "brand", page: "work" });

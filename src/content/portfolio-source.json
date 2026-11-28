@@ -304,6 +304,280 @@
   ],
   "projects": [
     {
+      "slug": "modular-data-centre",
+      "kind": "Modular",
+      "deliver": [
+        "Drawings",
+        "Renders"
+      ],
+      "status": "DESIGN DEVELOPMENT",
+      "discipline": "Modular infrastructure",
+      "title": "Modular Data Center",
+      "kicker": "Every component modelled at its real size",
+      "category": "Data Center Design",
+      "year": "2026",
+      "tier": "featured",
+      "summary": "A containerised facility modelled end to end in BIM — enclosure, cabinets, UPS, in-row cooling, cable ladder and external condenser plant — documented through cutaways, exploded axonometrics and an assembly sequence.",
+      "role": "3D modelling · technical coordination · visualisation · drawing production",
+      "tools": [
+        "Revit",
+        "Enscape",
+        "AutoCAD",
+        "3ds Max",
+        "FBX / IFC"
+      ],
+      "type": "Containerised / modular facility — 20 ft enclosure",
+      "timeline": "2026",
+      "facts": [
+        [
+          "Enclosure",
+          "20 ft container"
+        ],
+        [
+          "Arrangement",
+          "Single-sided cabinet row with in-row cooling interleaved"
+        ],
+        [
+          "Plant",
+          "External condenser units"
+        ],
+        [
+          "Deliverables",
+          "Cutaways · exploded axonometrics · layer-by-layer assembly"
+        ]
+      ],
+      "overview": "A complete facility inside a shipping-container enclosure. Every component was modelled — the cabinet row, in-row cooling, UPS, electrical panel, cable ladder, lighting, cameras, doors and external condensers — so the assembly could be checked for clash and clearance before anything was fabricated.",
+      "challenge": "A container gives almost no tolerance. Cabinet depth, in-row cooling width, door swing and the service aisle all have to fit inside a fixed internal width, with cable ladder and cooling pipework sharing one ceiling void.",
+      "approach": "The enclosure was modelled as separable layers — floor, walls, ceiling, cabinets, cooling, electrical, cabling, security — each exported individually, so the assembly could be shown building up one system at a time. A white-model language carries depth through shadow alone, which keeps a cutaway of thirty components legible.",
+      "solution": "A single-sided cabinet row with in-row cooling interleaved between cabinets, plant concentrated at the door end, and a full-length service aisle opposite — one clear walking route end to end, whichever cabinet is being worked on.",
+      "learned": "Modelling every component at true dimensions costs the time up front and saves all of it later. The clashes it exposed — a door swing against a panel, a ladder against a cooling pipe — would each have been a site problem."
+    },
+    {
+      "slug": "two-level-facility",
+      "kind": "Retrofit",
+      "deliver": [
+        "Proposal",
+        "Drawings",
+        "Renders"
+      ],
+      "status": "ISSUED FOR CONSTRUCTION",
+      "discipline": "Multi-level facility",
+      "title": "Two-Level Facility",
+      "kicker": "One organisational rule, repeated across two floors",
+      "category": "Data Center Design",
+      "year": "2026",
+      "tier": "featured",
+      "summary": "Two documented hall levels inside one building envelope — a twelve-cabinet central pod with a 1.20 m contained cold aisle, four in-room cooling bays and a ten-position perimeter row.",
+      "role": "Architectural design · rack layout · zoning · sheet production",
+      "credit": "Part of a small design team",
+      "tools": [
+        "Revit",
+        "AutoCAD",
+        "Enscape",
+        "InDesign"
+      ],
+      "type": "Technical facility — two floors",
+      "timeline": "Architectural sheet set, 2026",
+      "facts": [
+        [
+          "Structure",
+          "Repeating column bay of about 3 m"
+        ],
+        [
+          "Upper level",
+          "Central pod of 12 cabinets · 4 in-room cooling bays · 10-position perimeter row"
+        ],
+        [
+          "Lower level",
+          "Two rows of six cabinets · 3 in-room cooling bays at 20 ton each"
+        ],
+        [
+          "Contained cold aisle",
+          "1.20 m, repeated on both floors"
+        ]
+      ],
+      "overview": "Two hall levels within the same building envelope, set out on one repeating structural bay of about three metres. Each floor organises its cabinets and in-room cooling around contained cold-aisle pairs, coordinated directly to the structural grid and the access-floor tiling.",
+      "challenge": "Making one organisational rule work across two floors of different depth, so that pod, cooling bays and circulation all resolve against the same column grid and the same access-floor module rather than each floor being planned from scratch.",
+      "approach": "Zoning drives the plan: every zone reads directly off the structural grid, so nothing has a position that has to be explained. A restrained material base — white raised flooring, grey suspended ceiling, black cabinetry — with colour used as function, not decoration: one colour marks IT equipment, another marks in-room cooling, consistently across both floors.",
+      "solution": "One repeating unit — a contained cold-aisle pair with its cooling bay — set out on the grid and simply repeated. The upper level develops it fully around a twelve-cabinet central pod; the lower level keeps its existing arrangement and is documented as reference.",
+      "learned": "Drawing the zoning diagram before the rack layout, rather than after, made the layout almost self-evident. Tying the colour logic to function meant the same drawings worked for the design presentation and for the engineers."
+    },
+    {
+      "slug": "technical-level-48-racks",
+      "kind": "Retrofit",
+      "deliver": [
+        "Proposal",
+        "Drawings"
+      ],
+      "status": "DESIGN PROPOSAL",
+      "discipline": "Technical level",
+      "title": "Technical Level, 48 Racks",
+      "kicker": "A drawing set is an argument, not an archive",
+      "category": "Data Center Design",
+      "year": "2026",
+      "tier": "featured",
+      "summary": "One technical level holding two contained technical rooms, 48 racks and eight 20-ton cooling units, explained across a sequence of axonometrics that add one layer at a time.",
+      "role": "Architectural design · technical layout · proposal production",
+      "tools": [
+        "Revit",
+        "AutoCAD",
+        "Enscape",
+        "InDesign"
+      ],
+      "type": "Technical equipment facility — one level",
+      "timeline": "Proposal, 2026",
+      "facts": [
+        [
+          "Technical rooms",
+          "2, both with contained aisles"
+        ],
+        [
+          "Racks",
+          "48"
+        ],
+        [
+          "Cooling units",
+          "8 × 20 ton"
+        ],
+        [
+          "Levels documented",
+          "1"
+        ]
+      ],
+      "overview": "A single technical level organised as one technical strip containing both rack rooms and all cooling plant, alongside an open raised-floor hall and an existing air-handling room.",
+      "challenge": "The proposal had to be read and approved by people who do not read technical drawings, without simplifying the content to the point of being useless to the engineers who would build it.",
+      "approach": "Four axonometrics in sequence — the whole length, the interior, the shell alone, then a close view. Each adds exactly one layer of information, from a consistent viewing angle so the eye never has to reorient. Every value in the document is marked as observed, documented or scaled, so a reader can tell a printed dimension from a measured one.",
+      "solution": "A layered drawing sequence that works as both a narrative for decision-makers and a technical reference — the same geometry filtered four ways, rather than two separate sets to keep in sync.",
+      "learned": "Deciding what each image is allowed to say — and what it must leave out — did more for the proposal than any amount of added detail would have."
+    },
+    {
+      "slug": "rack-room-reorganisation",
+      "kind": "Retrofit",
+      "deliver": [
+        "Proposal",
+        "Drawings",
+        "Renders"
+      ],
+      "status": "ISSUED",
+      "discipline": "Rack room design",
+      "title": "Rack Room Reorganisation",
+      "kicker": "Before and after, from the same viewpoint",
+      "category": "Data Center Design",
+      "year": "2024",
+      "tier": "featured",
+      "summary": "Reorganisation of an existing room into a structured, fully populated 24-rack hall — documented as a before-and-after pair of axonometrics and an issued reflected ceiling plan.",
+      "role": "Design · rack layout · technical drawing",
+      "credit": "Design credited to me on the issued drawing",
+      "tools": [
+        "Revit",
+        "AutoCAD"
+      ],
+      "type": "Rack room design & layout within an existing room",
+      "timeline": "Issued drawing, 2024",
+      "facts": [
+        [
+          "Racks",
+          "24 — two rows of 12"
+        ],
+        [
+          "Aisle system",
+          "Cold aisle with contained access"
+        ],
+        [
+          "Access path",
+          "1.20 m clearance along the rack rows"
+        ],
+        [
+          "Issued drawing",
+          "Reflected ceiling plan, scale 1:50"
+        ]
+      ],
+      "overview": "An existing room converted into a dedicated data hall. The work centred on the layout and organisation of racks within the existing shell — establishing a logical equipment arrangement, making efficient use of the available floor area, and producing a technical, execution-ready layout that could be handed over for implementation.",
+      "challenge": "The room existed and was in use. Everything had to be resolved inside it: an orderly, disciplined equipment arrangement, clear access and circulation throughout, provision for maintenance and servicing, and coordination between installed equipment and the architectural shell.",
+      "approach": "Existing condition captured as an axonometric first, then the proposal drawn from exactly the same viewpoint, so the change reads without explanation. The layout was then issued as a properly titled technical drawing rather than a presentation image.",
+      "solution": "Twenty-four racks in two parallel rows of twelve, positioned back-to-back around a shared aisle with cooling units at both flanks, and 1.20 m maintained along the rows for servicing and circulation.",
+      "learned": "Drawing the existing condition properly — not as a sketch, but at the same quality as the proposal — is what made the improvement arguable rather than merely asserted."
+    },
+    {
+      "slug": "existing-hall-conversion",
+      "kind": "Retrofit",
+      "deliver": [
+        "Proposal",
+        "Drawings",
+        "Renders"
+      ],
+      "status": "DESIGN PROPOSAL",
+      "discipline": "Data hall conversion",
+      "title": "Existing Hall Conversion",
+      "kicker": "A layout reconciled against a geometry that is already fixed",
+      "category": "Data Center Design",
+      "year": "2026",
+      "tier": "featured",
+      "summary": "Conversion of an existing single-storey hall into an operational data center space — one contained pod of 24 rack positions resolved against a fixed column grid, documented in a proposal that separates what is established from what is still open.",
+      "role": "Space planning · rack & equipment layout · clearance and HVAC / electrical space coordination · Revit model · visualisation · proposal",
+      "tools": [
+        "Revit"
+      ],
+      "type": "Data hall conversion within an existing building",
+      "timeline": "2026",
+      "facts": [
+        [
+          "Rack positions",
+          "24 — two rows of 12"
+        ],
+        [
+          "Contained aisle",
+          "1.20 m clear width"
+        ]
+      ],
+      "challenge": "Working within an existing shell places the design problem where the constraints are: fixed column positions, fixed clear dimensions, an existing glazed perimeter, an existing floor build-up, and support rooms and a stair core that cannot be relocated."
+    },
+    {
+      "slug": "data-hall-retrofit",
+      "kind": "Retrofit",
+      "deliver": [
+        "Proposal",
+        "Drawings",
+        "Renders"
+      ],
+      "status": "DESIGN PROPOSAL",
+      "discipline": "Fit-out",
+      "title": "Data Hall Retrofit",
+      "kicker": "A single contained row, read as the architecture",
+      "category": "Data Center Design",
+      "year": "2026",
+      "tier": "featured",
+      "summary": "A technical fit-out inside an existing floor plate — 24 cabinets in two facing rows, a 1.20 m contained aisle, four plant units and a glazed technical corridor.",
+      "role": "Architectural design · technical layout · BIM · drawing production",
+      "tools": [
+        "Revit",
+        "AutoCAD",
+        "IFC",
+        "Enscape"
+      ],
+      "type": "Data hall fit-out within an existing floor plate",
+      "timeline": "Design-development proposal, 2026",
+      "facts": [
+        [
+          "Cabinets",
+          "24 — two facing rows of 12"
+        ],
+        [
+          "Contained aisle",
+          "1.20 m"
+        ],
+        [
+          "Plant units",
+          "4, paired at each row end"
+        ]
+      ],
+      "overview": "A data hall occupying part of a single floor plate. The scope was a technical fit-out: cabinet organisation, aisle containment, cooling plant position, raised-floor coordination and the high-level services zone. The rest of the plate is drawn as a laid but unfitted floor and carried as reference only.",
+      "challenge": "Fitting a coherent, serviceable cabinet row into a shell whose column grid, slab level and riser positions were already fixed, while keeping the contained aisle, door swings and maintenance clearances within acceptable limits.",
+      "approach": "The proposal was written to one strict rule: every quantity stated is read from the drawings or counted from them. Where the documentation carried no figure, it was recorded as not specified rather than estimated. Capacities and equipment specifications are absent from the source material and are asserted nowhere.",
+      "solution": "A single continuous contained row on the long axis, plant pushed to the row ends, and a perimeter technical corridor that lets a technician reach any cabinet face without entering the contained aisle.",
+      "learned": "Retrofit rewards resolving the immovable constraints first. Once the grid, slab and risers were drawn accurately, the cabinet row had far fewer viable positions than it first appeared — and the right one became obvious rather than negotiated."
+    },
+    {
       "slug": "the-last-shadow-of-time",
       "kind": "Museum",
       "deliver": [
