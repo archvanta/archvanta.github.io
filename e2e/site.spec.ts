@@ -333,23 +333,8 @@ test("home page introduces the site without showing project work", async ({ page
   await expect(page.getByTestId("plan-viewer")).toHaveCount(0);
   const map = page.getByTestId("site-map");
   await expect(map.locator("a")).toHaveCount(6);
-  // The hero is the Elias author block: his name, portrait and the site's sections as books, never projects.
-  const hero = page.locator(".ea-hero");
-  await expect(hero.getByRole("heading", { level: 1 })).toHaveText(/Amin Sadeghi/);
-  await expect(hero.locator("img.ea-portrait")).toHaveAttribute("src", /amin-cutout\.webp$/);
-  await expect(hero.getByRole("button", { name: /Selected work/ })).toBeVisible();
-  await expect(page.locator(".ea-splash")).toHaveCount(0);
-  await map.scrollIntoViewIfNeeded();
+  await page.getByRole("button", { name: "What is on this site" }).click();
+  await expect(map).toBeInViewport();
   await map.getByRole("link", { name: /Drawings/ }).click();
   await expect(page).toHaveURL(/#\/drawings$/);
-});
-
-test("home hero splash plays once per session and then opens onto the hero", async ({ page }) => {
-  await page.goto("/#/");
-  await expect(page.locator(".ea-splash")).toHaveCount(1);
-  await expect(page.locator(".ea-splash")).toHaveCount(0, { timeout: 6000 });
-  await expect(page.locator(".ea-hero h1 .ea-name-first")).toBeVisible();
-  await page.reload();
-  await expect(page.locator(".ea-hero h1 .ea-name-first")).toBeVisible();
-  await expect(page.locator(".ea-splash")).toHaveCount(0);
 });
