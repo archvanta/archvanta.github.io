@@ -52,7 +52,7 @@ function Hero() {
         showSplash={showSplash}
         name={e.name[locale]}
         intro={{ roles: e.roles[locale], headline: e.headline[locale], description: pick(copy.hero.body, locale) }}
-        portrait={{ src: '/images/amin-cutout.webp', width: 820, height: 800, alt: pick(person.name, locale) }}
+        portrait={{ src: '/images/amin-cutout.webp', width: 656, height: 686, alt: pick(person.name, locale) }}
         books={books}
         bookCard={{ href: brandHref('/work'), open: pick(e.bookCard.open, locale), close: pick(e.bookCard.close, locale), folio: '1' }}
         letter={{
